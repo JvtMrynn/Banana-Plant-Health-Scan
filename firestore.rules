@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return userDoc(request.auth.uid).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && role() == 'ADMIN';
+    }
+
+    function isExpert() {
+      return isSignedIn() && role() == 'EXPERT';
+    }
+
+    function isExpertOrAdmin() {
+      return isSignedIn() && (role() == 'EXPERT' || role() == 'ADMIN');
+    }
+    
+    match /login_lookup/{key} {
+      // Public read so username → email can be resolved before auth
+      allow read: if true;
+
+      // Writes only by the owner (matching uid) or admins
+      allow create, update, delete: if isAdmin() ||
+      (isSignedIn() && request.resource.data.uid == request.auth.uid);
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can read/write their own user doc
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+
+      // Admins can read any user
+      allow read: if isAdmin();
+
+      // Admins can approve registrations (update only the 'status' field)
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['status']);
+
+      // Creation must be performed by the authenticated user (their own doc)
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.id;
+    }
+
+    // Analysis history collection
+    match /analysis_history/{historyId} {
+      // Owner can read their own; experts/admins can read all
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || isExpertOrAdmin()
+      );
+
+      // Owner can create/update/delete their own entries
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Consultation requests collection
+    match /consultation_requests/{requestId} {
+      // Farmers read their own; experts/admins can read all
+      allow read: if isSignedIn() && (
+        resource.data.farmerId == request.auth.uid || isExpertOrAdmin()
+      );
+
+      // Farmers create their own requests
+      allow create: if isSignedIn() && request.resource.data.farmerId == request.auth.uid;
+
+      // Only experts can update/resolve requests (admins are read-only)
+      allow update: if isExpert();
+    }
+
+    // Disease information collection
+    match /disease_info/{diseaseId} {
+      // All authenticated users can read
+      allow read: if isSignedIn();
+
+      // Only experts can write (admins are read-only)
+      allow create, update, delete: if isExpert();
+    }
+
+    // Disease locations collection
+    match /disease_locations/{locationId} {
+      // Admins and experts can read
+      allow read: if isExpertOrAdmin();
+
+      // Only experts can write
+      allow create, update, delete: if isExpert();
+    }
+
+    // Login events (for admin auditing)
+    match /login_events/{eventId} {
+      // Admins can read all login events
+      allow read: if isAdmin();
+
+      // Any signed-in user can create their own event
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="Home"
+        android:enabled="true" />
+    
+    <item
+        android:id="@+id/nav_contact_expert"
+        android:icon="@android:drawable/ic_menu_call"
+        android:title="Contact"
+        android:enabled="true" />
+    
+    <item
+        android:id="@+id/nav_info"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="Diseases"
+        android:enabled="true" />
+    
+    <item
+        android:id="@+id/nav_about"
+        android:icon="@android:drawable/ic_menu_help"
+        android:title="About"
+        android:enabled="true" />
+    
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Profile"
+        android:enabled="true" />
+</menu>

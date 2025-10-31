@@ -1,0 +1,46 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.CapstoneProjectApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/Deep_Natural_Green</item>
+        <item name="colorPrimaryVariant">@color/Mild_Tone_Green</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/Bright_Lime_Green</item>
+        <item name="colorSecondaryVariant">@color/Mild_Tone_Green</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/Soft_Mint_Green</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnBackground">@color/Near_Black</item>
+        <item name="colorOnSurface">@color/Near_Black</item>
+        
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/Deep_Natural_Green</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar color -->
+        <item name="android:navigationBarColor">@color/Deep_Natural_Green</item>
+        
+        <!-- Bottom Navigation colors -->
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
+    </style>
+
+    <style name="Theme.CapstoneProjectApp" parent="Base.Theme.CapstoneProjectApp" />
+    
+    <!-- Bottom Navigation custom style -->
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.BottomNavigationView</item>
+        <item name="itemIconTint">@color/bottom_nav_color</item>
+        <item name="itemTextColor">@color/bottom_nav_color</item>
+        <item name="itemRippleColor">@color/Mild_Tone_Green</item>
+    </style>
+    
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorPrimary">@color/Deep_Natural_Green</item>
+        <item name="colorOnPrimary">@color/Muted_Gray</item>
+        <item name="colorSurface">@android:color/white</item>
+    </style>
+</resources>

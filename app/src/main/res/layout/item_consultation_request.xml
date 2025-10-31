@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardConsultation"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header with Status Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvFarmerName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Farmer Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PENDING"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@color/Deep_Natural_Green"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Disease Name -->
+        <TextView
+            android:id="@+id/tvDiseaseName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Disease: Black Sigatoka"
+            android:textSize="14sp"
+            android:textColor="@color/Deep_Natural_Green"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Detection Summary -->
+        <TextView
+            android:id="@+id/tvDetectionSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detection summary"
+            android:textSize="13sp"
+            android:textColor="@color/Muted_Gray"
+            android:layout_marginBottom="8dp"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <!-- Message -->
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Farmer's message"
+            android:textSize="13sp"
+            android:textColor="@color/Near_Black"
+            android:layout_marginBottom="8dp"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+        <!-- Timestamp -->
+        <TextView
+            android:id="@+id/tvTimestamp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2 hours ago"
+            android:textSize="12sp"
+            android:textColor="@color/Muted_Gray"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Response Section (visible when responded) -->
+        <LinearLayout
+            android:id="@+id/responseSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E8F5E9"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ Expert Response"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/Deep_Natural_Green"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvExpertResponse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expert's response"
+                android:textSize="13sp"
+                android:textColor="@color/Near_Black" />
+        </LinearLayout>
+
+        <!-- Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRespond"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Respond to Request"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/Deep_Natural_Green"
+            app:icon="@android:drawable/ic_menu_send"
+            app:iconTint="@android:color/white" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

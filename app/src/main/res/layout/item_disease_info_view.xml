@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Disease Name Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🍌"
+                android:textSize="28sp"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/tvDiseaseName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Disease Name"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/Deep_Natural_Green" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/Muted_Gray"
+            android:alpha="0.3"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Caused By Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🦠 Caused By"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvCausedBy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pathogen/Virus name"
+                android:textSize="14sp"
+                android:textColor="@color/Muted_Gray"
+                android:paddingStart="24dp"
+                android:paddingEnd="0dp" />
+        </LinearLayout>
+
+        <!-- Symptoms Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Symptoms"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvSymptoms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Disease symptoms"
+                android:textSize="14sp"
+                android:textColor="@color/Muted_Gray"
+                android:paddingStart="24dp"
+                android:paddingEnd="0dp" />
+        </LinearLayout>
+
+        <!-- Treatment Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="💊 Treatment"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvTreatment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Treatment methods"
+                android:textSize="14sp"
+                android:textColor="@color/Muted_Gray"
+                android:paddingStart="24dp"
+                android:paddingEnd="0dp" />
+        </LinearLayout>
+
+        <!-- Prevention Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🛡️ Prevention"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvPrevention"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Prevention methods"
+                android:textSize="14sp"
+                android:textColor="@color/Muted_Gray"
+                android:paddingStart="24dp"
+                android:paddingEnd="0dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CapstoneProjectApp">
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".RegistrationActivity"
+            android:exported="false" />
+        
+        <activity
+            android:name=".FarmerDashboardActivity"
+            android:exported="false" />
+        
+        <activity
+            android:name=".ResultActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
+        
+        <activity
+            android:name=".AnalysisHistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
+        
+        <activity
+            android:name=".ExpertDashboardActivity"
+            android:exported="false" />
+        
+        <activity
+            android:name=".DiseaseInfoManagementActivity"
+            android:exported="false"
+            android:parentActivityName=".ExpertDashboardActivity" />
+        
+        
+        
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        
+        <activity
+            android:name=".DiseaseInfoViewActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
+        
+        <activity
+            android:name=".ConsultationRequestsActivity"
+            android:exported="false"
+            android:parentActivityName=".ExpertDashboardActivity" />
+        
+        <activity
+            android:name=".MyConsultationsActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
+
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminUsersActivity"
+            android:exported="false"
+            android:parentActivityName=".AdminDashboardActivity" />
+
+        <activity
+            android:name=".AllLoginEventsActivity"
+            android:exported="false"
+            android:parentActivityName=".AdminUsersActivity" />
+
+        <activity
+            android:name=".PendingUsersActivity"
+            android:exported="false"
+            android:parentActivityName=".AdminUsersActivity" />
+    </application>
+
+</manifest>
