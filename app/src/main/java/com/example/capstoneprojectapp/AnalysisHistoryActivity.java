@@ -297,22 +297,39 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
             AnalysisHistory history = historyList.get(position);
-            
+
             // Show user email for expert mode
             if (isExpertMode && history.getUserEmail() != null) {
-                String displayName = history.getUserName() != null ? 
-                    history.getUserName() + " (" + history.getUserEmail() + ")" : 
-                    history.getUserEmail();
+                String displayName = history.getUserName() != null ?
+                        history.getUserName() + " (" + history.getUserEmail() + ")" :
+                        history.getUserEmail();
                 holder.diseaseNameText.setText(displayName + "\n" + history.getDiseaseName());
             } else {
                 holder.diseaseNameText.setText(history.getDiseaseName());
             }
-            
-            holder.confidenceText.setText(history.getConfidence());
+
+            // Full detections list stored in confidence field (legacy). Show it below in a readable way
+            String detectionsSummary = history.getConfidence();
+            if (detectionsSummary != null && !detectionsSummary.trim().isEmpty()) {
+                holder.detectionsSummaryText.setVisibility(View.VISIBLE);
+                holder.detectionsSummaryText.setText(detectionsSummary);
+            } else {
+                holder.detectionsSummaryText.setVisibility(View.GONE);
+            }
+
+            // Build a short badge text from the summary (e.g., highest % like "92%")
+            String badgeText = extractTopConfidencePercent(detectionsSummary);
+            if (badgeText == null || badgeText.isEmpty()) {
+                // Fallback: try to derive a concise label from diseaseName (contains confidence label)
+                badgeText = deriveLabelFromTitle(history.getDiseaseName());
+            }
+            holder.confidenceText.setText(badgeText != null ? badgeText : "");
+
+            // Timestamp
             holder.timestampText.setText(dateFormat.format(new Date(history.getTimestamp())));
-            
-            // Set confidence badge color
-            int badgeColor = getConfidenceColor(history.getConfidence());
+
+            // Set confidence badge color based on the concise badge text
+            int badgeColor = getConfidenceColor(badgeText);
             holder.confidenceBadge.setCardBackgroundColor(badgeColor);
         }
 
@@ -361,8 +378,47 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
             return Color.parseColor("#757575"); // Gray
         }
 
+        // Extract the highest numeric percent from a summary like
+        // "Black Sigatoka (92.3%), Aphids (78.4% ⚠), Healthy (65.0%)" -> "92%"
+        private String extractTopConfidencePercent(String summary) {
+            if (summary == null || summary.isEmpty()) return null;
+            String[] parts = summary.split(",\\s*");
+            float best = -1f;
+            for (String p : parts) {
+                String lower = p.toLowerCase(Locale.getDefault());
+                int open = lower.lastIndexOf('(');
+                int close = lower.lastIndexOf(')');
+                if (open >= 0 && close > open) {
+                    String inside = lower.substring(open + 1, close);
+                    String digits = inside.replaceAll("[^0-9.]", "");
+                    if (!digits.isEmpty()) {
+                        try {
+                            float val = Float.parseFloat(digits);
+                            if (val > best) best = val;
+                        } catch (NumberFormatException ignored) { }
+                    }
+                }
+            }
+            if (best < 0f) return null;
+            // Round to integer for compact badge
+            int rounded = Math.round(best);
+            return rounded + "%";
+        }
+
+        // If diseaseName contains a phrase like "Very High Confidence", map to a concise badge label
+        private String deriveLabelFromTitle(String title) {
+            if (title == null) return null;
+            String t = title.toLowerCase(Locale.getDefault());
+            if (t.contains("very high")) return "Very High";
+            if (t.contains("high")) return "High";
+            if (t.contains("moderate")) return "Moderate";
+            if (t.contains("low")) return "Low";
+            return null;
+        }
+
         static class HistoryViewHolder extends RecyclerView.ViewHolder {
             MaterialTextView diseaseNameText;
+            MaterialTextView detectionsSummaryText;
             MaterialTextView confidenceText;
             MaterialTextView timestampText;
             MaterialCardView confidenceBadge;
@@ -370,6 +426,7 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
             public HistoryViewHolder(@NonNull View itemView) {
                 super(itemView);
                 diseaseNameText = itemView.findViewById(R.id.diseaseNameText);
+                detectionsSummaryText = itemView.findViewById(R.id.detectionsSummaryText);
                 confidenceText = itemView.findViewById(R.id.confidenceText);
                 timestampText = itemView.findViewById(R.id.timestampText);
                 confidenceBadge = itemView.findViewById(R.id.confidenceBadge);

@@ -80,6 +80,12 @@ public class FarmerDashboardActivity extends AppCompatActivity {
 
         detectionService = new YOLOv8DetectionService();
         detectionService.initialize(this);
+        // Check for remote model updates in background
+        detectionService.checkAndUpdateModelAsync((updated, msg) -> {
+            if (updated) {
+                runOnUiThread(() -> Toast.makeText(this, "AI model updated", Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     private void initializeViews() {
