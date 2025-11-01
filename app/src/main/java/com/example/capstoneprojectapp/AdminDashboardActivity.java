@@ -53,7 +53,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private YOLOv8DetectionService detectionService;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
-    private ActivityResultLauncher<String> modelPickerLauncher;
     private static final int CAMERA_PERMISSION_REQUEST = 1101;
     private static final int STORAGE_PERMISSION_REQUEST = 1102;
 
@@ -189,26 +188,40 @@ public class AdminDashboardActivity extends AppCompatActivity {
             }
         });
 
-        modelPickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-            if (uri != null) {
-                try {
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    boolean ok = detectionService.installCustomModel(is);
-                    new MaterialAlertDialogBuilder(this)
-                            .setTitle(ok ? "Model Updated" : "Update Failed")
-                            .setMessage(ok ? "Custom YOLO model installed. It will be used for future analyses." : "Could not install the selected model.")
-                            .setPositiveButton("OK", null)
-                            .show();
-                } catch (Exception e) {
-                    Toast.makeText(this, "Error installing model", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        // Note: modelPickerLauncher no longer used (URL-based publish instead)
     }
 
     private void pickAndInstallModel() {
-        // Let admin pick a .ptl file
-        modelPickerLauncher.launch("application/*");
+        // Show dialog for global URL publish; keep file picker path for local install only if needed later
+        android.view.View view = getLayoutInflater().inflate(R.layout.dialog_model_publish, null);
+        com.google.android.material.textfield.TextInputEditText etUrl = view.findViewById(R.id.etModelUrl);
+        com.google.android.material.textfield.TextInputEditText etVersion = view.findViewById(R.id.etModelVersion);
+        etVersion.setText(String.valueOf(System.currentTimeMillis()));
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Publish Model (URL)")
+                .setView(view)
+                .setPositiveButton("Publish", (d,w)->{
+                    String url = etUrl.getText()!=null?etUrl.getText().toString().trim():"";
+                    String verStr = etVersion.getText()!=null?etVersion.getText().toString().trim():"";
+                    if (url.isEmpty()) { android.widget.Toast.makeText(this, "Enter model URL", android.widget.Toast.LENGTH_SHORT).show(); return; }
+                    long version = 0L; try { version = Long.parseLong(verStr); } catch (Exception ignored) { version = System.currentTimeMillis(); }
+                    java.util.Map<String,Object> meta = new java.util.HashMap<>();
+                    meta.put("version", version);
+                    meta.put("url", url);
+                    meta.put("updatedAt", System.currentTimeMillis());
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("ml_models").document("yolov8")
+                            .set(meta)
+                            .addOnSuccessListener(a-> {
+                                // Trigger the standard client update check instead of downloading here
+                                detectionService.checkAndUpdateModelAsync((updated, msg) -> runOnUiThread(() -> {
+                                    String text = updated ? "Model published and installed" : ("Published; " + msg);
+                                    android.widget.Toast.makeText(this, text, android.widget.Toast.LENGTH_LONG).show();
+                                }));
+                            })
+                            .addOnFailureListener(e-> android.widget.Toast.makeText(this, "Publish failed: "+e.getMessage(), android.widget.Toast.LENGTH_LONG).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void analyzeImage() {

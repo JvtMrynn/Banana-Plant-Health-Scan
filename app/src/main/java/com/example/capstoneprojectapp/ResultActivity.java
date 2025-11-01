@@ -35,6 +35,7 @@ public class ResultActivity extends AppCompatActivity {
     private MaterialButton btnBackToDashboard;
     private MaterialCardView resultCard;
     private FirebaseFirestore db;
+    private com.example.capstoneprojectapp.data.repo.DataRepository dataRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,7 @@ public class ResultActivity extends AppCompatActivity {
         initializeViews();
         setupToolbar();
         db = FirebaseFirestore.getInstance();
+        dataRepository = new com.example.capstoneprojectapp.data.repo.DataRepository(this);
         displayResults();
     }
 
@@ -64,6 +66,13 @@ public class ResultActivity extends AppCompatActivity {
         resultCard = findViewById(R.id.resultCard);
 
         btnBackToDashboard.setOnClickListener(v -> finish());
+
+        // Tap image to view fullscreen with bounding boxes
+        analyzedImageView.setOnClickListener(v -> {
+            try {
+                startActivity(new android.content.Intent(ResultActivity.this, FullscreenImageActivity.class));
+            } catch (Exception ignored) { }
+        });
     }
 
     private void setupToolbar() {
@@ -163,16 +172,34 @@ public class ResultActivity extends AppCompatActivity {
                             if (def != null) {
                                 bindDetails(def.name, null, def.description, def.management, def.prevention, intent);
                             } else {
-                                // Bind whatever we have from intent
-                                bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                // Try local cache
+                                com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity local = dataRepository.getLocalDiseaseByName(detectedName);
+                                if (local != null) {
+                                    String desc = buildDescription(local);
+                                    bindDetails(local.name, local.scientificName, desc, local.treatment, local.prevention, intent);
+                                    android.view.View banner = findViewById(R.id.offlineBanner);
+                                    if (banner != null) banner.setVisibility(View.VISIBLE);
+                                } else {
+                                    // Bind whatever we have from intent
+                                    bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                }
                             }
                         })
                         .addOnFailureListener(e -> {
-                            DiseaseDetails def = Defaults.forName(detectedName);
-                            if (def != null) {
-                                bindDetails(def.name, null, def.description, def.management, def.prevention, intent);
+                            // On failure (offline), consult local cache first
+                            com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity local = dataRepository.getLocalDiseaseByName(detectedName);
+                            if (local != null) {
+                                String desc = buildDescription(local);
+                                bindDetails(local.name, local.scientificName, desc, local.treatment, local.prevention, intent);
+                                android.view.View banner = findViewById(R.id.offlineBanner);
+                                if (banner != null) banner.setVisibility(View.VISIBLE);
                             } else {
-                                bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                DiseaseDetails def = Defaults.forName(detectedName);
+                                if (def != null) {
+                                    bindDetails(def.name, null, def.description, def.management, def.prevention, intent);
+                                } else {
+                                    bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                }
                             }
                         });
                 // Early return to avoid double-binding; Firestore callback will handle UI
@@ -182,6 +209,18 @@ public class ResultActivity extends AppCompatActivity {
 
         // Bind immediately for paths where we don't query Firestore
         bindDetails(diseaseName, null, description, management, prevention, intent);
+    }
+
+    // Build description text from local entity fields (offline cache)
+    private String buildDescription(com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity e) {
+        StringBuilder sb = new StringBuilder();
+        if (e.causedBy != null && !e.causedBy.isEmpty()) {
+            sb.append("Caused by: ").append(e.causedBy).append('\n');
+        }
+        if (e.symptoms != null && !e.symptoms.isEmpty()) {
+            sb.append("Symptoms: ").append(e.symptoms).append('\n');
+        }
+        return sb.toString().trim();
     }
 
 private void bindDetails(String diseaseName, String scientificName, String description, String management, String prevention, Intent intent) {

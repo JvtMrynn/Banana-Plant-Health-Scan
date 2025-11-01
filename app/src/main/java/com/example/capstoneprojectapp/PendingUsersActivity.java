@@ -98,7 +98,7 @@ public class PendingUsersActivity extends AppCompatActivity {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .limit(PAGE_SIZE);
         if (lastVisible != null) q = q.startAfter(lastVisible);
-        q.get().addOnSuccessListener(snap -> {
+        q.get(com.google.firebase.firestore.Source.SERVER).addOnSuccessListener(snap -> {
             List<DocumentSnapshot> docs = snap.getDocuments();
             if (!docs.isEmpty()) {
                 lastVisible = docs.get(docs.size() - 1);
@@ -158,3 +158,4 @@ public class PendingUsersActivity extends AppCompatActivity {
         class VH extends RecyclerView.ViewHolder { TextView tvTitle, tvSubtitle; MaterialButton btnApprove; VH(@NonNull View v){ super(v); tvTitle=v.findViewById(R.id.tvTitle); tvSubtitle=v.findViewById(R.id.tvSubtitle); btnApprove=v.findViewById(R.id.btnApprove);} }
     }
 }
+

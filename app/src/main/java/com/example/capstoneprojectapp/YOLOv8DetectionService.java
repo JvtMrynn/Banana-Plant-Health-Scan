@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.content.SharedPreferences;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
  * YOLOv8 Object Detection Service for Leaf Disease Detection
  * Handles model loading, inference, and post-processing (NMS)
@@ -31,6 +36,7 @@ public class YOLOv8DetectionService {
 
     private Module model;
     private Context context;
+    private SharedPreferences modelPrefs;
 
     // YOLOv8 model parameters
     private static final int INPUT_SIZE = 640;  // YOLOv8 default input size
@@ -61,6 +67,7 @@ public class YOLOv8DetectionService {
 
     public void initialize(Context context) {
         this.context = context;
+        this.modelPrefs = context.getSharedPreferences("ModelPrefs", Context.MODE_PRIVATE);
         try {
             String[] assets = context.getAssets().list("");
             Log.d(TAG, "Assets found: " + Arrays.toString(assets));
@@ -77,6 +84,79 @@ public class YOLOv8DetectionService {
         } catch (Exception e) {
             Log.e(TAG, "Cannot list assets", e);
         }
+    }
+
+    public interface ModelUpdateCallback { void onComplete(boolean updated, String message); }
+
+    /**
+     * Check Firestore for a newer model and download from Firebase Storage if available.
+     * Firestore doc: ml_models/yolov8 with fields: version (long), storagePath (string)
+     */
+    public void checkAndUpdateModelAsync(ModelUpdateCallback cb) {
+        if (context == null) { if (cb != null) cb.onComplete(false, "No context"); return; }
+        FirebaseFirestore.getInstance().collection("ml_models").document("yolov8")
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc == null || !doc.exists()) { if (cb != null) cb.onComplete(false, "No remote metadata"); return; }
+                    Long rv = null;
+                    try { rv = doc.getLong("version"); } catch (Exception ignored) {}
+                    final long remoteVersion = rv != null ? rv : 0L;
+                    String url = doc.getString("url");
+                    String path = doc.getString("storagePath");
+                    if ((url == null || url.isEmpty()) && (path == null || path.isEmpty())) { if (cb != null) cb.onComplete(false, "No model URL"); return; }
+                    long localVersion = modelPrefs.getLong("modelVersion", 0L);
+                    if (remoteVersion <= localVersion) { if (cb != null) cb.onComplete(false, "Model up to date"); return; }
+                    // Download
+                    File targetDir = new File(context.getFilesDir(), CUSTOM_MODEL_DIR);
+                    if (!targetDir.exists()) targetDir.mkdirs();
+                    File outFile = new File(targetDir, CUSTOM_MODEL_NAME);
+                    // Prefer plain HTTPS URL if available; else attempt to treat storagePath as an HTTPS URL
+                    String downloadUrl = (url != null && !url.isEmpty()) ? url : path;
+                    httpDownloadToFile(downloadUrl, outFile, new Runnable() {
+                        @Override public void run() {
+                            SharedPreferences.Editor ed = modelPrefs.edit();
+                            ed.putLong("modelVersion", remoteVersion).apply();
+                            close();
+                            if (cb != null) cb.onComplete(true, "Model updated");
+                        }
+                    }, new java.util.function.Consumer<String>() {
+                        @Override public void accept(String err) {
+                            if (cb != null) cb.onComplete(false, "Download failed: " + err);
+                        }
+                    });
+                })
+                .addOnFailureListener(e -> { if (cb != null) cb.onComplete(false, "Metadata error: " + e.getMessage()); });
+    }
+
+    private void httpDownloadToFile(String link, File outFile, Runnable onSuccess, java.util.function.Consumer<String> onError) {
+        new Thread(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL u = new URL(link);
+                conn = (HttpURLConnection) u.openConnection();
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(30000);
+                conn.connect();
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    onError.accept("HTTP " + conn.getResponseCode());
+                    return;
+                }
+                try (InputStream is = conn.getInputStream(); FileOutputStream os = new FileOutputStream(outFile)) {
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = is.read(buf)) > 0) {
+                        os.write(buf, 0, n);
+                    }
+                    os.flush();
+                }
+                if (outFile.length() < 100000) { onError.accept("Downloaded file too small (" + outFile.length() + " bytes)"); return; }
+                onSuccess.run();
+            } catch (Exception e) {
+                onError.accept(e.getMessage());
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }).start();
     }
 
     /**
@@ -120,10 +200,16 @@ public class YOLOv8DetectionService {
             File customDir = new File(context.getFilesDir(), CUSTOM_MODEL_DIR);
             File customModel = new File(customDir, CUSTOM_MODEL_NAME);
             if (customModel.exists() && customModel.length() > 0) {
-                Log.d(TAG, "Loading YOLOv8 model from custom path: " + customModel.getAbsolutePath());
-                model = LiteModuleLoader.load(customModel.getAbsolutePath());
-                Log.d(TAG, "YOLOv8 custom model loaded successfully");
-                return;
+                Log.d(TAG, "Loading YOLOv8 model from custom path: " + customModel.getAbsolutePath() + " (" + customModel.length() + " bytes)");
+                try {
+                    model = LiteModuleLoader.load(customModel.getAbsolutePath());
+                    Log.d(TAG, "YOLOv8 custom model loaded successfully");
+                    return;
+                } catch (Throwable t) {
+                    Log.e(TAG, "Failed to load custom model. Deleting and falling back to asset.", t);
+                    try { customModel.delete(); } catch (Exception ignored) {}
+                    if (modelPrefs != null) { try { modelPrefs.edit().putLong("modelVersion", 0L).apply(); } catch (Exception ignored) {} }
+                }
             }
 
             Log.d(TAG, "Loading YOLOv8 model from assets: " + MODEL_NAME);

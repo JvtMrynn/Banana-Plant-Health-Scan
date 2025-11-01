@@ -112,8 +112,7 @@ public class ConsultationRequestsActivity extends AppCompatActivity {
     private void determineRole() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            db.collection("users").document(currentUser.getUid()).get()
-                    .addOnSuccessListener(doc -> {
+            db.collection("users").document(currentUser.getUid()).get(com.google.firebase.firestore.Source.SERVER).addOnSuccessListener(doc -> {
                         String role = doc.getString("role");
                         isAdmin = User.ROLE_ADMIN.equals(role);
                         if (adapter != null) adapter.notifyDataSetChanged();
@@ -237,8 +236,7 @@ public class ConsultationRequestsActivity extends AppCompatActivity {
 
         // Get expert name from Firestore
         db.collection("users").document(currentUser.getUid())
-                .get()
-                .addOnSuccessListener(document -> {
+                .get(com.google.firebase.firestore.Source.SERVER).addOnSuccessListener(document -> {
                     String expertName = document.getString("name");
                     if (expertName == null) expertName = "Expert";
 
@@ -355,3 +353,4 @@ public class ConsultationRequestsActivity extends AppCompatActivity {
         }
     }
 }
+

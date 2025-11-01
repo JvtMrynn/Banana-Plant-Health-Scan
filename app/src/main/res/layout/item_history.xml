@@ -42,15 +42,30 @@
                     android:id="@+id/confidenceText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="High"
+                    android:text="92%"
                     android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                     android:textColor="@android:color/white"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="4dp" />
 
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
+
+        <!-- Detections summary (readable, wraps to 2 lines) -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/detectionsSummaryText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="#424242"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:text="Black Sigatoka (92.3%), Aphids (78.4% ⚠), Healthy (65.0%)" />
 
         <!-- Timestamp -->
         <com.google.android.material.textview.MaterialTextView

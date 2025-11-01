@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.CapstoneProjectApp" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.CapstoneProjectApp" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/Deep_Natural_Green</item>
         <item name="colorPrimaryVariant">@color/Mild_Tone_Green</item>
@@ -24,6 +24,9 @@
         <!-- Navigation bar color -->
         <item name="android:navigationBarColor">@color/Deep_Natural_Green</item>
         
+        <!-- Prevent auto force-dark and set consistent light palette -->
+        <item name="android:forceDarkAllowed">false</item>
+
         <!-- Bottom Navigation colors -->
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
     </style>

@@ -85,8 +85,37 @@ public class DiseaseInfoViewActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> {
-                    hideLoading();
-                    showEmptyState();
+                    // Fallback to local cache for offline mode
+                    new Thread(() -> {
+                        com.example.capstoneprojectapp.data.repo.DataRepository repo = new com.example.capstoneprojectapp.data.repo.DataRepository(this);
+                        List<com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity> local = repo.getDiseaseInfoSync();
+                        List<DiseaseInfo> mapped = new ArrayList<>();
+                        for (com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity de : local) {
+                            DiseaseInfo di = new DiseaseInfo();
+                            di.setId(de.id);
+                            di.setDiseaseName(de.name);
+                            di.setScientificName(de.scientificName);
+                            di.setCausedBy(de.causedBy);
+                            di.setSymptoms(de.symptoms);
+                            di.setTreatment(de.treatment);
+                            di.setPrevention(de.prevention);
+                            mapped.add(di);
+                        }
+                        runOnUiThread(() -> {
+                            hideLoading();
+                            if (mapped.isEmpty()) {
+                                showEmptyState();
+                            } else {
+                                showDiseaseList();
+                                adapter.setDiseaseList(mapped);
+                                com.google.android.material.snackbar.Snackbar.make(
+                                        diseaseRecyclerView,
+                                        "Offline mode",
+                                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                                ).show();
+                            }
+                        });
+                    }).start();
                 });
     }
 

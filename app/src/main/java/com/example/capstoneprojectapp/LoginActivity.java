@@ -227,7 +227,9 @@ public class LoginActivity extends AppCompatActivity {
                             logLoginEvent(uid, email, role);
                             
                             // Navigate based on role
-                            navigateBasedOnRole(role);
+                    navigateBasedOnRole(role);
+                    // Enqueue background sync once signed in (if any offline analyses exist)
+                    com.example.capstoneprojectapp.sync.HistorySyncWorker.enqueue(LoginActivity.this);
                         } else {
                             Toast.makeText(LoginActivity.this, 
                                     "User data not found in database",

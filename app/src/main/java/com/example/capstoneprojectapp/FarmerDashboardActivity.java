@@ -58,6 +58,7 @@ public class FarmerDashboardActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "LoginPrefs";
+    private static final String KEY_SYNC_AFTER_LOGIN = "syncAfterLogin";
 
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -80,12 +81,85 @@ public class FarmerDashboardActivity extends AppCompatActivity {
 
         detectionService = new YOLOv8DetectionService();
         detectionService.initialize(this);
-        // Check for remote model updates in background
-        detectionService.checkAndUpdateModelAsync((updated, msg) -> {
-            if (updated) {
-                runOnUiThread(() -> Toast.makeText(this, "AI model updated", Toast.LENGTH_SHORT).show());
+
+        // If launched in offline mode, show a brief banner
+        boolean offlineMode = getIntent().getBooleanExtra("OFFLINE_MODE", false)
+                || !com.example.capstoneprojectapp.util.NetworkUtils.isOnline(this);
+        if (offlineMode) {
+            // Show offline mode as a banner instead of Snackbar
+            android.view.View banner = findViewById(R.id.seededBanner);
+            com.google.android.material.textview.MaterialTextView txt = findViewById(R.id.bannerText);
+            com.google.android.material.button.MaterialButton dismiss = findViewById(R.id.bannerDismiss);
+            if (banner != null && txt != null && dismiss != null) {
+                txt.setText("Offline mode");
+                dismiss.setOnClickListener(v -> banner.setVisibility(View.GONE));
+                banner.setVisibility(View.VISIBLE);
+            // Append (Offline) to toolbar title
+            if (getSupportActionBar() != null) {
+                CharSequence currentTitle = getSupportActionBar().getTitle();
+                String t = currentTitle != null ? currentTitle.toString() : "";
+                if (!t.toLowerCase(java.util.Locale.getDefault()).contains("offline")) {
+                    getSupportActionBar().setTitle((t.isEmpty() ? "Dashboard" : t) + " (Offline)");
+                }
             }
-        });
+            }
+            if (bottomNavigation != null) {
+                android.view.Menu menu = bottomNavigation.getMenu();
+                android.view.MenuItem contact = menu.findItem(R.id.nav_contact_expert);
+                android.view.MenuItem profile = menu.findItem(R.id.nav_profile);
+                if (contact != null) contact.setVisible(false);
+                if (profile != null) profile.setVisible(false);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // If cache just finished seeding, inform the user that offline is ready
+        try {
+            android.content.SharedPreferences sp = getApplicationContext()
+                    .getSharedPreferences("OfflineCachePrefs", MODE_PRIVATE);
+            boolean seeded = sp.getBoolean("diseaseCacheSeeded", false);
+            boolean shown = sp.getBoolean("seededToastShown", false);
+            if (seeded && !shown) {
+                android.view.View banner = findViewById(R.id.seededBanner);
+                com.google.android.material.textview.MaterialTextView txt = findViewById(R.id.bannerText);
+                com.google.android.material.button.MaterialButton dismiss = findViewById(R.id.bannerDismiss);
+                if (banner != null && txt != null && dismiss != null) {
+                    txt.setText("Disease info cached. Available offline.");
+                    dismiss.setOnClickListener(v -> banner.setVisibility(View.GONE));
+                    banner.setVisibility(View.VISIBLE);
+                }
+                sp.edit().putBoolean("seededToastShown", true).apply();
+            }
+        } catch (Exception ignored) { }
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null && !currentUser.isAnonymous()) {
+            boolean syncFlag = sharedPreferences.getBoolean(KEY_SYNC_AFTER_LOGIN, false);
+            if (syncFlag) {
+                new com.example.capstoneprojectapp.data.repo.DataRepository(this)
+                        .syncUnsyncedLocalHistory(currentUser);
+                sharedPreferences.edit().putBoolean(KEY_SYNC_AFTER_LOGIN, false).apply();
+                Toast.makeText(this, "Synced your offline analyses", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            com.example.capstoneprojectapp.data.repo.DataRepository repo = new com.example.capstoneprojectapp.data.repo.DataRepository(this);
+            try {
+                int unsynced = repo.getUnsyncedCount();
+                if (unsynced > 0 && com.example.capstoneprojectapp.util.NetworkUtils.isOnline(this)) {
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                            .setTitle("Save your analyses?")
+                            .setMessage("You have " + unsynced + " recent analyses. Sign in to save them to your history?")
+                            .setPositiveButton("Save and Sign In", (d, w) -> {
+                                sharedPreferences.edit().putBoolean(KEY_SYNC_AFTER_LOGIN, true).apply();
+                                startActivity(new Intent(this, LoginActivity.class));
+                            })
+                            .setNegativeButton("Not now", null)
+                            .show();
+                }
+            } catch (Exception ignored) { }
+        }
     }
 
     private void initializeViews() {
@@ -560,9 +634,25 @@ public class FarmerDashboardActivity extends AppCompatActivity {
     
     private void saveDetectionsToHistory(List<Detection> detections) {
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        
-        // Only save for logged-in users (not guests)
-        if (currentUser == null || currentUser.isAnonymous() || detections.isEmpty()) {
+        if (detections.isEmpty()) return;
+        // Guest: save locally for offline mode
+        if (currentUser == null || currentUser.isAnonymous()) {
+            StringBuilder summary = new StringBuilder();
+            float highestConfidence = 0f;
+            for (Detection det : detections) {
+                float conf = det.getConfidence();
+                if (conf > highestConfidence) highestConfidence = conf;
+                summary.append(det.getClassName()).append(" (")
+                        .append(String.format("%.1f%%", conf * 100))
+                        .append("), ");
+            }
+            String detectionSummary = summary.length() > 0 ? summary.substring(0, summary.length() - 2) : "No detections";
+            String confidenceLevel = highestConfidence >= 0.85f ? "Very High Confidence" :
+                    highestConfidence >= 0.75f ? "High Confidence" :
+                            highestConfidence >= 0.60f ? "Moderate Confidence" : "Low Confidence";
+            String title = detections.size() + " disease(s) - " + confidenceLevel;
+            new com.example.capstoneprojectapp.data.repo.DataRepository(this)
+                    .saveAnalysisHistoryGuest(title, detectionSummary, System.currentTimeMillis());
             return;
         }
         
@@ -662,3 +752,6 @@ public class FarmerDashboardActivity extends AppCompatActivity {
         }
     }
 }
+
+
+

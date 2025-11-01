@@ -97,7 +97,7 @@ public class AllLoginEventsActivity extends AppCompatActivity {
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(PAGE_SIZE);
         if (lastVisible != null) q = q.startAfter(lastVisible);
-        q.get().addOnSuccessListener(snap -> {
+        q.get(com.google.firebase.firestore.Source.SERVER).addOnSuccessListener(snap -> {
             List<DocumentSnapshot> docs = snap.getDocuments();
             if (!docs.isEmpty()) {
                 lastVisible = docs.get(docs.size() - 1);
@@ -145,4 +145,5 @@ public class AllLoginEventsActivity extends AppCompatActivity {
             TextView tvTitle, tvSubtitle; VH(@NonNull View v){ super(v); tvTitle=v.findViewById(R.id.tvTitle); tvSubtitle=v.findViewById(R.id.tvSubtitle);} }
     }
 }
+
 

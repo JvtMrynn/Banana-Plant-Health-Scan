@@ -107,7 +107,7 @@ public class AdminUsersActivity extends AppCompatActivity {
         db.collection("login_events")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(5)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .addOnSuccessListener(snap -> {
                     logins.clear();
                     for (DocumentSnapshot d : snap.getDocuments()) {
@@ -117,7 +117,13 @@ public class AdminUsersActivity extends AppCompatActivity {
                     loginAdapter.notifyDataSetChanged();
                     emptyLogins.setVisibility(logins.isEmpty() ? View.VISIBLE : View.GONE);
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load logins", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                            .setTitle("Network required")
+                            .setMessage("This screen requires internet.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                });
     }
 
     private void loadPendingRegistrations() {
@@ -125,7 +131,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .whereEqualTo("status", "PENDING")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .limit(20)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .addOnSuccessListener(snap -> {
                     pendingUsers.clear();
                     for (DocumentSnapshot d : snap.getDocuments()) {
@@ -218,3 +224,5 @@ public class AdminUsersActivity extends AppCompatActivity {
         return sdf.format(new java.util.Date(ts));
     }
 }
+
+

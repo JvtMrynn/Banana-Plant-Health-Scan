@@ -80,22 +80,36 @@ public class DetectionImageView extends AppCompatImageView {
             return;
         }
 
-        // Get the actual image dimensions within the view
-        int viewWidth = getWidth();
-        int viewHeight = getHeight();
-
-        // Draw each detection
-        for (Detection detection : detections) {
-            drawDetection(canvas, detection, viewWidth, viewHeight);
+        // Compute the actual displayed image rectangle within this view
+        RectF imageRect = getImageRect();
+        if (imageRect == null) {
+            // Fallback: use full view (legacy behaviour)
+            imageRect = new RectF(0, 0, getWidth(), getHeight());
         }
+
+        // Clip all drawings to the image bounds so boxes never exceed the image area
+        int save = canvas.save();
+        canvas.clipRect(imageRect);
+
+        for (Detection detection : detections) {
+            drawDetection(canvas, detection, imageRect);
+        }
+
+        canvas.restoreToCount(save);
     }
 
     /**
      * Draw a single detection with bounding box and label
      */
-    private void drawDetection(Canvas canvas, Detection detection, int viewWidth, int viewHeight) {
-        // Get scaled bounding box
-        RectF bbox = detection.getScaledBoundingBox(viewWidth, viewHeight);
+    private void drawDetection(Canvas canvas, Detection detection, RectF imageRect) {
+        // Scale normalized bbox by the displayed image dimensions, then offset by imageRect origin
+        RectF scaled = detection.getScaledBoundingBox((int) imageRect.width(), (int) imageRect.height());
+        RectF bbox = new RectF(
+                imageRect.left + scaled.left,
+                imageRect.top + scaled.top,
+                imageRect.left + scaled.right,
+                imageRect.top + scaled.bottom
+        );
 
         // Choose color based on class
         int color = getColorForClass(detection.getClassId());
@@ -118,9 +132,13 @@ public class DetectionImageView extends AppCompatImageView {
         float labelX = bbox.left;
         float labelY = bbox.top - 10;
 
-        // Ensure label stays within view bounds
-        if (labelY < textHeight) {
-            labelY = bbox.top + textHeight + 10;  // Draw inside box if no space above
+        // Ensure label stays within image bounds
+        if (labelY - textHeight < imageRect.top) {
+            labelY = Math.min(bbox.bottom - 10, imageRect.bottom - 10);
+        }
+        if (labelX < imageRect.left) labelX = imageRect.left + 10;
+        if (labelX + textWidth + 20 > imageRect.right) {
+            labelX = Math.max(imageRect.left + 10, imageRect.right - (textWidth + 20));
         }
 
         // Draw text background
@@ -153,5 +171,32 @@ public class DetectionImageView extends AppCompatImageView {
         };
 
         return colors[classId % colors.length];
+    }
+
+    /**
+     * Calculate the rectangle where the drawable (bitmap) is actually displayed inside the view,
+     * accounting for ImageView scaleType and matrix transforms.
+     */
+    private RectF getImageRect() {
+        if (getDrawable() == null) return null;
+
+        int dwidth = getDrawable().getIntrinsicWidth();
+        int dheight = getDrawable().getIntrinsicHeight();
+        if (dwidth <= 0 || dheight <= 0) return null;
+
+        android.graphics.Matrix m = getImageMatrix();
+        float[] vals = new float[9];
+        m.getValues(vals);
+        float scaleX = vals[android.graphics.Matrix.MSCALE_X];
+        float scaleY = vals[android.graphics.Matrix.MSCALE_Y];
+        float transX = vals[android.graphics.Matrix.MTRANS_X];
+        float transY = vals[android.graphics.Matrix.MTRANS_Y];
+
+        float left = transX + getPaddingLeft();
+        float top = transY + getPaddingTop();
+        float right = left + dwidth * scaleX;
+        float bottom = top + dheight * scaleY;
+
+        return new RectF(left, top, right, bottom);
     }
 }

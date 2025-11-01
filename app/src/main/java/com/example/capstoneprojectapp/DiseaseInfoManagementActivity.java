@@ -138,16 +138,22 @@ public class DiseaseInfoManagementActivity extends AppCompatActivity
     private void loadDiseaseInfo() {
         db.collection("disease_info")
                 .orderBy("diseaseName")
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<DiseaseInfo> diseaseList = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         DiseaseInfo disease = document.toObject(DiseaseInfo.class);
                         diseaseList.add(disease);
                     }
-                    
+                    if (diseaseList.isEmpty()) {
+                        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                                .setTitle("Network required")
+                                .setMessage("Admin/Expert requires internet to load data.")
+                                .setPositiveButton("OK", null)
+                                .show();
+                    }
                     adapter.setDiseaseList(diseaseList);
-                    
+           
                     if (diseaseList.isEmpty()) {
                         emptyView.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);

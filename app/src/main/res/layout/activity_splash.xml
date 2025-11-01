@@ -36,7 +36,7 @@
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Disease Detection and Analysis"
+            android:text="Disease Detection and Classification Analysis"
             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
             android:textColor="@color/Muted_Gray"
             android:layout_marginBottom="32dp" />

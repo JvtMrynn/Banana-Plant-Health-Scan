@@ -103,5 +103,13 @@ service cloud.firestore {
       // Any signed-in user can create their own event
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
+
+    // ML model metadata (global model distribution)
+    match /ml_models/{modelId} {
+      // All clients can read metadata to know which model version to download
+      allow read: if true;
+      // Only admins can create/update metadata
+      allow create, update, delete: if isAdmin();
+    }
   }
 }

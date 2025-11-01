@@ -50,7 +50,7 @@ public class RegistrationActivity extends AppCompatActivity {
         roleRadioGroup = findViewById(R.id.roleRadioGroup);
         radioFarmer = findViewById(R.id.radioFarmer);
         radioExpert = findViewById(R.id.radioExpert);
-        radioAdmin = findViewById(R.id.radioAdmin);
+//        radioAdmin = findViewById(R.id.radioAdmin);
         registerButton = findViewById(R.id.registerButton);
         loginTextView = findViewById(R.id.loginTextView);
         progressBar = findViewById(R.id.progressBar);
@@ -79,6 +79,11 @@ public class RegistrationActivity extends AppCompatActivity {
             emailEditText.setError("Email is required");
             return;
         }
+        // Strict email validation
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError("Enter a valid email address");
+            return;
+        }
 
         if (TextUtils.isEmpty(username)) {
             usernameEditText.setError("Username is required");
@@ -95,9 +100,9 @@ public class RegistrationActivity extends AppCompatActivity {
             passwordEditText.setError("Password is required");
             return;
         }
-
-        if (password.length() < 6) {
-            passwordEditText.setError("Password must be at least 6 characters");
+        // Strong password: 8+ chars, 1 upper, 1 lower, 1 digit, 1 symbol
+        if (!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$")) {
+            passwordEditText.setError("Min 8 chars, include upper, lower, number, symbol");
             return;
         }
 
@@ -170,9 +175,10 @@ public class RegistrationActivity extends AppCompatActivity {
             return User.ROLE_FARMER;
         } else if (selectedId == R.id.radioExpert) {
             return User.ROLE_EXPERT;
-        } else if (selectedId == R.id.radioAdmin) {
-            return User.ROLE_ADMIN;
         }
+//        else if (selectedId == R.id.radioAdmin) {
+//            return User.ROLE_ADMIN;
+//        }
         
         return User.ROLE_FARMER; // Default
     }
