@@ -56,7 +56,7 @@ A mobile app that detects banana plant diseases from photos using a YOLOv8‑Lit
 ## Global Model Updates
 - Admin publishes a direct HTTPS URL (GitHub Releases asset recommended) and a new `version` to Firestore doc `ml_models/yolov8` with fields:
   ```json
-  { "version": 1.0.0-ptl-v1, "url": "https://github.com/JvtMrynn/Banana-Plant-Health-Scan/releases/download/v1.0.0-ptl-v1/yolov8_disease_v1.ptl", "updatedAt": 1700000000000 }
+  { "version": 1.0, "url": "https://github.com/JvtMrynn/Banana-Plant-Health-Scan/releases/download/v1.0.0-ptl-v1/yolov8_disease_v1.ptl", "updatedAt": 1700000000000 }
   ```
 - Splash checks this metadata; if newer than local, downloads the model, validates (content type/size), and loads it. On failure, removes the bad file and falls back to the asset model.
 
