@@ -115,5 +115,21 @@ This preserves user data across app updates.
 - Overlays misaligned: ensure `Detection` bounding boxes are normalized [0–1] relative to the original image size fed to the model.
 
 ## License
-This project contains third‑party libraries; review their licenses (Firebase, PyTorch Mobile, AndroidX).
+
+This project uses third-party libraries and tools under the following licenses:
+
+1. Firebase SDKs — Apache License 2.0  
+   https://www.apache.org/licenses/LICENSE-2.0
+
+2. PyTorch Mobile (TorchScript/TorchLite) — BSD 3-Clause License  
+   https://github.com/pytorch/pytorch/blob/main/LICENSE
+
+3. AndroidX Libraries — Apache License 2.0  
+   https://www.apache.org/licenses/LICENSE-2.0
+
+4. TensorFlow Lite — Apache License 2.0  
+   https://www.apache.org/licenses/LICENSE-2.0
+
+5. Ultralytics YOLOv8 (if used) — AGPL-3.0 License  
+   https://github.com/ultralytics/ultralytics/blob/main/LICENSE
 
