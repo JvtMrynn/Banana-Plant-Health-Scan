@@ -144,7 +144,7 @@
                 android:id="@+id/passwordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Password (min 6 characters)"
+                android:hint="Password (min 8 characters)"
                 android:inputType="textPassword"
                 android:textSize="16sp"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -201,7 +201,7 @@
                 android:id="@+id/radioExpert"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Expert - Manage disease info and track locations"
+                android:text="Expert - Manage disease info and expert consultations"
                 android:textSize="14sp"
                 android:padding="8dp"/>
 

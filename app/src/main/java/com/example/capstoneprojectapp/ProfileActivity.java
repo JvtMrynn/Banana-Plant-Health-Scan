@@ -215,7 +215,7 @@ public class ProfileActivity extends AppCompatActivity {
                     }
 
                     if (newPassword.length() < 6) {
-                        Toast.makeText(this, "Password must be at least 6 characters", 
+                        Toast.makeText(this, "Password must be at least 8 characters", 
                                 Toast.LENGTH_SHORT).show();
                         return;
                     }

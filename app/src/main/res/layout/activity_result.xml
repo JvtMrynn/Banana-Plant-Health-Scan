@@ -128,6 +128,26 @@
                     android:layout_gravity="end"
                     android:layout_marginBottom="16dp"/>
 
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/detectionCardHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detection_card_header"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:visibility="gone"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"/>
+
+                <LinearLayout
+                    android:id="@+id/detectionCardContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginBottom="16dp"/>
+
                 <!-- Disease Name -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/diseaseNameText"

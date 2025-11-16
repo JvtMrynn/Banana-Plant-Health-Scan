@@ -587,7 +587,7 @@ public class FarmerDashboardActivity extends AppCompatActivity {
                         "• Detailed disease information\n" +
                         "• Treatment recommendations\n" +
                         "• Prevention tips\n" +
-                        "• Expert consultation (coming soon)\n\n" +
+                        "• Expert consultation\n\n" +
                         "Developed for farmers and agricultural experts to help maintain healthy banana crops.")
                 .setPositiveButton("OK", null)
                 .show();

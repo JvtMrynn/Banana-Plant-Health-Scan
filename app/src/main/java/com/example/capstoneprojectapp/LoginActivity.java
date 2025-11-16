@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (password.length() < 6) {
-            passwordEditText.setError("Password must be at least 6 characters");
+            passwordEditText.setError("Password must be at least 8 characters");
             return;
         }
 

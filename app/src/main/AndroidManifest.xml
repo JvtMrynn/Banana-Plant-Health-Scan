@@ -50,7 +50,6 @@
             android:name=".ResultActivity"
             android:exported="false"
             android:parentActivityName=".FarmerDashboardActivity" />
-        
         <activity
             android:name=".AnalysisHistoryActivity"
             android:exported="false"

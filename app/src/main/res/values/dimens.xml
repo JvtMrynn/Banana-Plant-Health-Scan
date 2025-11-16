@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common clearance used to keep scrollable content above the persistent bottom navigation -->
+    <dimen name="bottom_nav_clearance">96dp</dimen>
+</resources>

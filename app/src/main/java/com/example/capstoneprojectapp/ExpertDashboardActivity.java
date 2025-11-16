@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class ExpertDashboardActivity extends AppCompatActivity {
@@ -261,42 +262,42 @@ public class ExpertDashboardActivity extends AppCompatActivity {
                 // Save to history for logged-in experts
                 saveDetectionsToHistory(detections);
 
+                List<Detection> highConfidenceDetections = filterHighConfidenceDetections(detections);
+
                 Intent intent = new Intent(ExpertDashboardActivity.this, ResultActivity.class);
-                intent.putExtra("detection_count", detections.size());
+                intent.putExtra("detection_count", highConfidenceDetections.size());
 
                 String confidenceWarning = "";
-                if (!detections.isEmpty()) {
+                if (!highConfidenceDetections.isEmpty()) {
                     StringBuilder summary = new StringBuilder();
-                    boolean hasModerateConfidence = false;
-                    boolean hasLowConfidence = false;
-
-                    for (int i = 0; i < detections.size(); i++) {
-                        Detection det = detections.get(i);
+                    for (int i = 0; i < highConfidenceDetections.size(); i++) {
+                        Detection det = highConfidenceDetections.get(i);
                         summary.append(String.format("%d. %s (%.1f%%)\n",
                                 i + 1, det.getClassName(), det.getConfidence() * 100));
-                        if (det.getConfidence() < 0.75f) hasModerateConfidence = true;
-                        if (det.getConfidence() < 0.85f) hasLowConfidence = true;
-                    }
-
-                    if (hasModerateConfidence) {
-                        confidenceWarning = "\n⚠️ DETECTION CONFIDENCE NOTICE:\n" +
-                                "The detection confidence is moderate (60-75%). Please verify.";
-                    }
-                    if (hasLowConfidence && detections.get(0).getConfidence() < 0.85f) {
-                        confidenceWarning = "\n⚠️ IMPORTANT: VERIFY THIS DETECTION\n" +
-                                "Detection confidence: " + String.format("%.1f%%", detections.get(0).getConfidence() * 100);
                     }
                     intent.putExtra("detections_summary", summary.toString());
                 }
 
-                intent.putExtra("disease_name", detections.isEmpty() ? "No Diseases Detected" : "Multiple Detections");
-                intent.putExtra("description", detections.isEmpty() ?
-                        "The image appears healthy or no banana plant diseases were detected." :
-                        confidenceWarning + " Diseases detected in the image.");
+                if (highConfidenceDetections.isEmpty()) {
+                    intent.putExtra("disease_name", "No high-confidence detections");
+                    intent.putExtra("description", getString(R.string.no_high_confidence));
+                    intent.putExtra("confidence", "N/A");
+                    intent.putExtra("severity_color", android.graphics.Color.GRAY);
+                } else if (highConfidenceDetections.size() == 1) {
+                    Detection top = highConfidenceDetections.get(0);
+                    intent.putExtra("disease_name", top.getClassName());
+                    intent.putExtra("description", getString(R.string.single_detection_desc));
+                    intent.putExtra("confidence", String.format(Locale.getDefault(), "%.1f%%", top.getConfidence() * 100));
+                    intent.putExtra("severity_color", android.graphics.Color.RED);
+                } else {
+                    intent.putExtra("disease_name", "Multiple Detections");
+                    intent.putExtra("description", getString(R.string.multiple_detections_desc));
+                    intent.putExtra("confidence", String.format(Locale.getDefault(), "%d detections", highConfidenceDetections.size()));
+                    intent.putExtra("severity_color", android.graphics.Color.RED);
+                }
+
                 intent.putExtra("management", "");
                 intent.putExtra("prevention", "");
-                intent.putExtra("confidence", detections.isEmpty() ? "N/A" : String.format("%d detections", detections.size()));
-                intent.putExtra("severity_color", detections.isEmpty() ? android.graphics.Color.GREEN : android.graphics.Color.RED);
                 intent.putExtra("is_error", false);
                 intent.putExtra("error_message", "");
 
@@ -366,6 +367,17 @@ public class ExpertDashboardActivity extends AppCompatActivity {
                 .set(history)
                 .addOnSuccessListener(aVoid -> { })
                 .addOnFailureListener(e -> { });
+    }
+
+    private List<Detection> filterHighConfidenceDetections(List<Detection> detections) {
+        List<Detection> result = new ArrayList<>();
+        if (detections == null) return result;
+        for (Detection detection : detections) {
+            if (detection != null && detection.getConfidence() >= 0.75f) {
+                result.add(detection);
+            }
+        }
+        return result;
     }
 
     private boolean checkCameraPermission() {
@@ -446,20 +458,20 @@ public class ExpertDashboardActivity extends AppCompatActivity {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("YOLOv8 Model Information")
                 .setMessage("Current Detection Model Details:\n\n" +
-                        "Model: YOLOv8n (Nano)\n" +
+                        "Model: YOLOv8s\n" +
                         "Framework: PyTorch\n" +
                         "Input Size: 640x640\n" +
-                        "Classes: 4 Banana Diseases\n\n" +
+                        "Classes: 5 Banana Diseases\n\n" +
                         "Detected Classes:\n" +
-                        "1. Aphids\n" +
-                        "2. Bacterial Wilt\n" +
-                        "3. Black Sigatoka\n" +
-                        "4. Xanthomonas Wilt\n" +
-                        "5. Healthy Leaf\n\n" +
+                        "1. Black Sigatoka\n" +
+                        "2. Banana Bract Mosaic Disease\n" +
+                        "3. Bacterial Wilt\n" +
+                        "4. Fusarium Wilt\n" +
+                        "5. Xanthomonas Wilt\n\n" +
                         "Model Performance:\n" +
                         "• Average Precision: 85%+\n" +
                         "• Inference Speed: ~200ms\n" +
-                        "• Confidence Threshold: 60%\n\n" +
+                        "• Confidence Threshold: 75%\n\n" +
                         "Last Updated: Current Version\n" +
                         "Model Format: ONNX (Optimized)")
                 .setPositiveButton("OK", null)

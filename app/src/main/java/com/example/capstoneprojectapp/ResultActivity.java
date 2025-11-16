@@ -2,12 +2,16 @@ package com.example.capstoneprojectapp;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,7 +19,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.android.material.textview.MaterialTextView;
 
 public class ResultActivity extends AppCompatActivity {
@@ -31,11 +34,14 @@ public class ResultActivity extends AppCompatActivity {
     private MaterialTextView treatableStatusText;
     private MaterialTextView detectionsListText;
     private MaterialButton btnShowAllDetections;
+    private MaterialTextView detectionCardHeader;
+    private LinearLayout detectionCardContainer;
     private View severityIndicator;
     private MaterialButton btnBackToDashboard;
     private MaterialCardView resultCard;
     private FirebaseFirestore db;
     private com.example.capstoneprojectapp.data.repo.DataRepository dataRepository;
+    private boolean selectedDetectionView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +67,8 @@ public class ResultActivity extends AppCompatActivity {
         treatableStatusText = findViewById(R.id.treatableStatusText);
         detectionsListText = findViewById(R.id.detectionsListText);
         btnShowAllDetections = findViewById(R.id.btnShowAllDetections);
+        detectionCardHeader = findViewById(R.id.detectionCardHeader);
+        detectionCardContainer = findViewById(R.id.detectionCardContainer);
         severityIndicator = findViewById(R.id.severityIndicator);
         btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
         resultCard = findViewById(R.id.resultCard);
@@ -86,6 +94,7 @@ public class ResultActivity extends AppCompatActivity {
 
     private void displayResults() {
         Intent intent = getIntent();
+        selectedDetectionView = intent.getBooleanExtra("selected_detection_view", false);
         boolean isError = intent.getBooleanExtra("is_error", false);
 
         // Retrieve the analyzed image from ImageHolder
@@ -98,19 +107,42 @@ public class ResultActivity extends AppCompatActivity {
 
         // Retrieve and display detections
         ArrayList<Detection> detections = DetectionHolder.getInstance().getDetections();
-        if (detections != null && !detections.isEmpty()) {
-            analyzedImageView.setDetections(detections);
-            // Build detections summary list
-            bindDetectionsList(detections, false);
-            if (detections.size() > 5) {
+        if (selectedDetectionView) {
+            Detection selected = SelectedDetectionHolder.getInstance().getDetection();
+            if (selected != null) {
+                detections = new ArrayList<>();
+                detections.add(selected);
+                SelectedDetectionHolder.getInstance().clear();
+            } else {
+                finish();
+                return;
+            }
+        }
+        if (detections == null) {
+            detections = new ArrayList<>();
+        }
+        List<Detection> highConfidenceDetections = filterHighConfidenceDetections(detections);
+        List<Detection> distinctDetections = getBestDetectionsByClass(highConfidenceDetections);
+        String summaryText = buildDetectionSummaryText(distinctDetections, false);
+        populateDetectionCards(distinctDetections);
+        if (!highConfidenceDetections.isEmpty()) {
+            analyzedImageView.setDetections(highConfidenceDetections);
+            detectionsListText.setText(summaryText);
+            if (distinctDetections.size() > 5) {
                 btnShowAllDetections.setVisibility(View.VISIBLE);
                 btnShowAllDetections.setOnClickListener(v -> {
-                    bindDetectionsList(detections, true);
+                    detectionsListText.setText(buildDetectionSummaryText(distinctDetections, true));
                     btnShowAllDetections.setVisibility(View.GONE);
                 });
             } else {
                 btnShowAllDetections.setVisibility(View.GONE);
             }
+        } else {
+            analyzedImageView.clearDetections();
+            detectionsListText.setText(getString(R.string.no_high_confidence));
+            btnShowAllDetections.setVisibility(View.GONE);
+            showNoHighConfidenceState(intent);
+            return;
         }
 
         if (isError) {
@@ -124,16 +156,29 @@ public class ResultActivity extends AppCompatActivity {
         String prevention = intent.getStringExtra("prevention");
         String confidence = intent.getStringExtra("confidence");
         int severityColor = intent.getIntExtra("severity_color", getColor(android.R.color.holo_green_dark));
+
+        if (distinctDetections.size() > 1) {
+            diseaseName = getString(R.string.multi_detection_title);
+            description = getString(R.string.multiple_detections_desc);
+            confidence = String.format(Locale.getDefault(), "%d detections", distinctDetections.size());
+        } else if (distinctDetections.size() == 1) {
+            Detection only = distinctDetections.get(0);
+            diseaseName = only.getClassName();
+            description = getString(R.string.single_detection_desc);
+            confidence = String.format(Locale.getDefault(), "%.1f%%", only.getConfidence() * 100f);
+        }
         
         // Get detection summary if available
-        String detectionsSummary = intent.getStringExtra("detections_summary");
+        String detectionsSummary = (summaryText != null && !summaryText.isEmpty())
+                ? summaryText
+                : intent.getStringExtra("detections_summary");
         if (detectionsSummary != null && !detectionsSummary.isEmpty()) {
             description = detectionsSummary + "\n\n" + description;
         }
 
         // If we have detections, enrich details from Firestore or fallback defaults
-        if (detections != null && !detections.isEmpty()) {
-            Detection top = getTopDetection(detections);
+        if (!highConfidenceDetections.isEmpty()) {
+            Detection top = getTopDetection(highConfidenceDetections);
             String topName = top.getClassName();
             // Healthy / Other quick paths
             if (equalsIgnoreCase(topName, "Healthy")) {
@@ -167,32 +212,27 @@ public class ResultActivity extends AppCompatActivity {
                                     return;
                                 }
                             }
-                            // Fallback defaults
-                            DiseaseDetails def = Defaults.forName(detectedName);
-                            if (def != null) {
-                                bindDetails(def.name, null, def.description, def.management, def.prevention, intent);
-                            } else {
-                                // Try local cache
-                                com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity local = dataRepository.getLocalDiseaseByName(detectedName);
+                            // Fallback defaults or cached data
+                            loadLocalDiseaseInfo(detectedName, local -> {
                                 if (local != null) {
                                     String desc = buildDescription(local);
                                     bindDetails(local.name, local.scientificName, desc, local.treatment, local.prevention, intent);
-                                    android.view.View banner = findViewById(R.id.offlineBanner);
-                                    if (banner != null) banner.setVisibility(View.VISIBLE);
+                                    showOfflineBanner();
                                 } else {
-                                    // Bind whatever we have from intent
-                                    bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                    DiseaseDetails def = Defaults.forName(detectedName);
+                                    if (def != null) {
+                                        bindDetails(def.name, null, def.description, def.management, def.prevention, intent);
+                                    } else {
+                                        bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
+                                    }
                                 }
-                            }
+                            });
                         })
-                        .addOnFailureListener(e -> {
-                            // On failure (offline), consult local cache first
-                            com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity local = dataRepository.getLocalDiseaseByName(detectedName);
+                        .addOnFailureListener(e -> loadLocalDiseaseInfo(detectedName, local -> {
                             if (local != null) {
                                 String desc = buildDescription(local);
                                 bindDetails(local.name, local.scientificName, desc, local.treatment, local.prevention, intent);
-                                android.view.View banner = findViewById(R.id.offlineBanner);
-                                if (banner != null) banner.setVisibility(View.VISIBLE);
+                                showOfflineBanner();
                             } else {
                                 DiseaseDetails def = Defaults.forName(detectedName);
                                 if (def != null) {
@@ -201,7 +241,7 @@ public class ResultActivity extends AppCompatActivity {
                                     bindDetails(fbName, null, fbDesc, fbMgmt, fbPrev, intent);
                                 }
                             }
-                        });
+                        }));
                 // Early return to avoid double-binding; Firestore callback will handle UI
                 return;
             }
@@ -209,6 +249,23 @@ public class ResultActivity extends AppCompatActivity {
 
         // Bind immediately for paths where we don't query Firestore
         bindDetails(diseaseName, null, description, management, prevention, intent);
+    }
+
+    private void loadLocalDiseaseInfo(String diseaseName, LocalDiseaseCallback callback) {
+        new Thread(() -> {
+            com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity local =
+                    dataRepository.getLocalDiseaseByName(diseaseName);
+            runOnUiThread(() -> callback.onComplete(local));
+        }).start();
+    }
+
+    private void showOfflineBanner() {
+        View banner = findViewById(R.id.offlineBanner);
+        if (banner != null) banner.setVisibility(View.VISIBLE);
+    }
+
+    private interface LocalDiseaseCallback {
+        void onComplete(com.example.capstoneprojectapp.data.local.entity.DiseaseInfoEntity entity);
     }
 
     // Build description text from local entity fields (offline cache)
@@ -310,7 +367,21 @@ private void bindDetails(String diseaseName, String scientificName, String descr
 //        return sb.toString().trim();
 //    }
 
-    private void bindDetectionsList(List<Detection> detections, boolean showAll) {
+    private List<Detection> filterHighConfidenceDetections(List<Detection> detections) {
+        List<Detection> result = new ArrayList<>();
+        if (detections == null) return result;
+        for (Detection detection : detections) {
+            if (detection != null && detection.getConfidence() >= 0.75f) {
+                result.add(detection);
+            }
+        }
+        return result;
+    }
+
+    private String buildDetectionSummaryText(List<Detection> detections, boolean showAll) {
+        if (detections == null || detections.isEmpty()) {
+            return "";
+        }
         int limit = showAll ? detections.size() : Math.min(5, detections.size());
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < limit; i++) {
@@ -319,10 +390,95 @@ private void bindDetails(String diseaseName, String scientificName, String descr
               .append(". ")
               .append(d.getClassName())
               .append(" (")
-              .append(String.format(java.util.Locale.getDefault(), "%.1f%%", d.getConfidence() * 100))
+              .append(String.format(Locale.getDefault(), "%.1f%%", d.getConfidence() * 100f))
               .append(")\n");
         }
-        detectionsListText.setText(sb.toString());
+        if (!showAll && detections.size() > limit) {
+            sb.append("…");
+        }
+        return sb.toString().trim();
+    }
+
+    private List<Detection> getBestDetectionsByClass(List<Detection> detections) {
+        List<Detection> result = new ArrayList<>();
+        if (detections == null) return result;
+        LinkedHashMap<String, Detection> bestByClass = new LinkedHashMap<>();
+        for (Detection detection : detections) {
+            if (detection == null) continue;
+            String key = detection.getClassName() != null
+                    ? detection.getClassName().toLowerCase(Locale.US)
+                    : "";
+            Detection current = bestByClass.get(key);
+            if (current == null || detection.getConfidence() > current.getConfidence()) {
+                bestByClass.put(key, detection);
+            }
+        }
+        result.addAll(bestByClass.values());
+        return result;
+    }
+
+    private void populateDetectionCards(List<Detection> detections) {
+        if (detectionCardContainer == null || detectionCardHeader == null) return;
+        if (selectedDetectionView || detections == null || detections.size() <= 1) {
+            detectionCardHeader.setVisibility(View.GONE);
+            detectionCardContainer.setVisibility(View.GONE);
+            detectionCardContainer.removeAllViews();
+            return;
+        }
+        detectionCardHeader.setVisibility(View.VISIBLE);
+        detectionCardContainer.setVisibility(View.VISIBLE);
+        detectionCardContainer.removeAllViews();
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (Detection detection : detections) {
+            View card = inflater.inflate(R.layout.item_multi_detection_entry, detectionCardContainer, false);
+            TextView title = card.findViewById(R.id.detectionTitleText);
+            TextView confidence = card.findViewById(R.id.detectionConfidenceText);
+            title.setText(detection.getClassName());
+            confidence.setText(String.format(Locale.getDefault(), "%.1f%% confidence", detection.getConfidence() * 100f));
+            card.setOnClickListener(v -> openDetectionDetail(detection));
+            detectionCardContainer.addView(card);
+        }
+    }
+
+    private void openDetectionDetail(Detection detection) {
+        SelectedDetectionHolder.getInstance().setDetection(detection);
+        Intent detailIntent = new Intent(this, ResultActivity.class);
+        detailIntent.putExtra("selected_detection_view", true);
+        detailIntent.putExtra("disease_name", detection.getClassName());
+        detailIntent.putExtra("description", getString(R.string.single_detection_desc));
+        detailIntent.putExtra("management", "");
+        detailIntent.putExtra("prevention", "");
+        detailIntent.putExtra("confidence", String.format(Locale.getDefault(), "%.1f%%", detection.getConfidence() * 100f));
+        detailIntent.putExtra("severity_color", Color.RED);
+        detailIntent.putExtra("is_error", false);
+        detailIntent.putExtra("error_message", "");
+        startActivity(detailIntent);
+    }
+
+    private void showNoHighConfidenceState(Intent intent) {
+        diseaseNameText.setText(getString(R.string.no_confidence_title));
+        scientificNameText.setText(getString(R.string.scientific_unknown));
+        definitionText.setText(getString(R.string.no_high_confidence_details));
+
+        View managementHeader = findViewById(R.id.managementHeaderText);
+        managementHeader.setVisibility(View.GONE);
+        managementText.setVisibility(View.GONE);
+        View preventionHeader = findViewById(R.id.preventionHeaderText);
+        preventionHeader.setVisibility(View.GONE);
+        preventionText.setVisibility(View.GONE);
+
+        confidenceText.setText("Detection Confidence: N/A");
+        treatableStatusText.setText(getString(R.string.status_consult_expert));
+        severityIndicator.setBackgroundColor(Color.GRAY);
+
+        resultCard.setAlpha(0f);
+        resultCard.setTranslationY(32f);
+        resultCard.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(300)
+                .start();
     }
 
     // Simple defaults for common classes used by the model, used if Firestore has no entry
@@ -421,8 +577,11 @@ private void bindDetails(String diseaseName, String scientificName, String descr
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clear the image and detections from memory when leaving the result screen
-        ImageHolder.getInstance().clearImage();
-        DetectionHolder.getInstance().clearDetections();
+        SelectedDetectionHolder.getInstance().clear();
+        if (!selectedDetectionView) {
+            // Clear the image and detections from memory when leaving the result screen
+            ImageHolder.getInstance().clearImage();
+            DetectionHolder.getInstance().clearDetections();
+        }
     }
 }

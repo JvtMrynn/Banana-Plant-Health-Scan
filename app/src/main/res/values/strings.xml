@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">Banana Plant Health Scan</string>
+    <string name="multi_detection_title">Detection Details</string>
+    <string name="multi_detection_subtitle">Multiple diseases were detected. Tap any card below to review its full diagnosis.</string>
+    <string name="multi_detection_hint">Tap to open full result card</string>
+    <string name="detection_card_header">Tap a detection below to view full details</string>
+    <string name="single_detection_desc">A high-confidence detection was found. Review the card below for details.</string>
+    <string name="multiple_detections_desc">Multiple high-confidence detections were found. Choose a disease to review its details.</string>
+    <string name="multi_detection_counter">Detection %1$d of %2$d</string>
+    <string name="multi_prev">Previous</string>
+    <string name="multi_next">Next</string>
+    <string name="content_desc_detection_image">Analyzed detection image</string>
+    <string name="management_header">Management &amp; Remedy</string>
+    <string name="prevention_header">Prevention</string>
+    <string name="no_high_confidence">No detections met the minimum confidence requirement.</string>
+    <string name="disease_info_not_found">Detailed information is unavailable for this disease.</string>
+    <string name="no_confidence_title">No High-Confidence Detections</string>
+    <string name="scientific_unknown">Scientific name not available</string>
+    <string name="status_consult_expert">Status: Consult agricultural expert</string>
+    <string name="no_high_confidence_details">The model detected signals, but none met the minimum confidence threshold. Please retake the photo for a clearer result.</string>
 </resources>

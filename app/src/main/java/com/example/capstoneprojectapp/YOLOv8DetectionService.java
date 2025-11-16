@@ -30,7 +30,7 @@ import java.net.URL;
 public class YOLOv8DetectionService {
 
     private static final String TAG = "YOLOv8Detection";
-    private static final String MODEL_NAME = "yolov8_disease.ptl";
+    private static final String MODEL_NAME = "yolov8_disease_640_100.ptl";
     private static final String CUSTOM_MODEL_DIR = "models";
     private static final String CUSTOM_MODEL_NAME = "current_model.ptl";
 
@@ -53,12 +53,12 @@ public class YOLOv8DetectionService {
     // Disease class labels - UPDATE THESE based on your training data
     // Common leaf diseases for reference
     private static final String[] CLASS_LABELS = {
-        "Aphids",
-        "Bacterial wilt",
         "Black Sigatoka",
-        "Healthy",
-        "Other",
-        "Xanthomonas wilt"
+        "Fusarium Wilt",
+        "Banana Bract Mosaic Disease",
+        "Xanthomonas Wilt",
+        "Bacterial Wilt",
+        "Healthy"
     };
 
     public YOLOv8DetectionService() {
