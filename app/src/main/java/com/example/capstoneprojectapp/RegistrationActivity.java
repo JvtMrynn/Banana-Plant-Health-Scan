@@ -17,12 +17,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.UUID;
 
 public class RegistrationActivity extends AppCompatActivity {
 
     private EditText nameEditText, usernameEditText, emailEditText, passwordEditText, confirmPasswordEditText;
+    private TextInputLayout passwordInputLayout, confirmPasswordInputLayout;
     private RadioGroup roleRadioGroup;
     private RadioButton radioFarmer, radioExpert, radioAdmin;
     private Button registerButton;
@@ -47,6 +49,8 @@ public class RegistrationActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText);
+        passwordInputLayout = findViewById(R.id.passwordInputLayout);
+        confirmPasswordInputLayout = findViewById(R.id.confirmPasswordInputLayout);
         roleRadioGroup = findViewById(R.id.roleRadioGroup);
         radioFarmer = findViewById(R.id.radioFarmer);
         radioExpert = findViewById(R.id.radioExpert);
@@ -68,6 +72,12 @@ public class RegistrationActivity extends AppCompatActivity {
         String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String confirmPassword = confirmPasswordEditText.getText().toString().trim();
+
+        // Clear previous password field errors to prevent overlap with the toggle icon
+        passwordInputLayout.setError(null);
+        passwordInputLayout.setErrorEnabled(false);
+        confirmPasswordInputLayout.setError(null);
+        confirmPasswordInputLayout.setErrorEnabled(false);
 
         // Validation
         if (TextUtils.isEmpty(name)) {
@@ -97,17 +107,20 @@ public class RegistrationActivity extends AppCompatActivity {
         }
 
         if (TextUtils.isEmpty(password)) {
-            passwordEditText.setError("Password is required");
+            passwordInputLayout.setError("Password is required");
+            passwordEditText.requestFocus();
             return;
         }
         // Strong password: 8+ chars, 1 upper, 1 lower, 1 digit, 1 symbol
         if (!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$")) {
-            passwordEditText.setError("Min 8 chars, include upper, lower, number, symbol");
+            passwordInputLayout.setError("Min 8 chars, include upper, lower, number, symbol");
+            passwordEditText.requestFocus();
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            confirmPasswordEditText.setError("Passwords do not match");
+            confirmPasswordInputLayout.setError("Passwords do not match");
+            confirmPasswordEditText.requestFocus();
             return;
         }
 
