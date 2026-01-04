@@ -70,11 +70,27 @@ service cloud.firestore {
         resource.data.farmerId == request.auth.uid || isExpertOrAdmin()
       );
 
-      // Farmers create their own requests
-      allow create: if isSignedIn() && request.resource.data.farmerId == request.auth.uid;
+      // Farmers create their own requests (analysis image required)
+      allow create: if isSignedIn()
+        && request.resource.data.farmerId == request.auth.uid
+        && request.resource.data.analysisImageBase64 is string
+        && request.resource.data.analysisImageBase64.size() > 0;
 
-      // Only experts can update/resolve requests (admins are read-only)
-      allow update: if isExpert();
+      // Experts can update/resolve requests (admins are read-only)
+      // Farmers can add a follow-up to their own requests only.
+      allow update: if isExpert() || (
+        isSignedIn()
+        && resource.data.farmerId == request.auth.uid
+        && request.resource.data.farmerId == resource.data.farmerId
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'status',
+          'farmerFollowUp',
+          'farmerFollowUpAt',
+          'messages',
+          'updatedAt'
+        ])
+        && request.resource.data.status == 'FOLLOW_UP'
+      );
     }
 
     // Disease information collection

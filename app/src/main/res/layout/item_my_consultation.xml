@@ -78,6 +78,67 @@
             android:textColor="@color/Muted_Gray"
             android:layout_marginBottom="8dp" />
 
+        <!-- Attached Analysis -->
+        <TextView
+            android:id="@+id/tvAttachedAnalysis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Attached analysis: Black Sigatoka - 92%"
+            android:textSize="12sp"
+            android:textColor="@color/Muted_Gray"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location: Example"
+            android:textSize="12sp"
+            android:textColor="@color/Muted_Gray"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <com.example.capstoneprojectapp.DetectionImageView
+            android:id="@+id/ivAnalysisImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_svg"
+            android:contentDescription="Attached analysis image"
+            android:visibility="gone" />
+
+        <!-- Conversation -->
+        <LinearLayout
+            android:id="@+id/conversationSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F5F5F5"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Conversation"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvConversation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expert: Example reply"
+                android:textSize="13sp"
+                android:textColor="@color/Near_Black" />
+        </LinearLayout>
+
         <!-- Expert Response Section (visible when responded) -->
         <LinearLayout
             android:id="@+id/responseSection"
@@ -120,10 +181,58 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Responded 1 hour ago"
+                android:text="Reviewed 1 hour ago"
                 android:textSize="11sp"
                 android:textColor="@color/Muted_Gray" />
         </LinearLayout>
+
+        <!-- Farmer Follow-up Section -->
+        <LinearLayout
+            android:id="@+id/followUpSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E3F2FD"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your follow-up"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvFollowUpMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Follow-up details"
+                android:textSize="13sp"
+                android:textColor="@color/Near_Black" />
+
+            <TextView
+                android:id="@+id/tvFollowUpTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Sent 1 hour ago"
+                android:textSize="11sp"
+                android:textColor="@color/Muted_Gray" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFollowUp"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send follow-up"
+            android:layout_gravity="end"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
 
         <!-- Waiting Message (visible when pending) -->
         <TextView

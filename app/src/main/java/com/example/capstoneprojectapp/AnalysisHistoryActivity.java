@@ -1,7 +1,11 @@
 package com.example.capstoneprojectapp;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -37,6 +42,7 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
     private RecyclerView historyRecyclerView;
     private LinearLayout emptyStateLayout;
     private MaterialButton btnClearHistory;
+    private MaterialButton btnLoadMore;
     private BottomNavigationView bottomNavigation;
     
     private FirebaseAuth mAuth;
@@ -45,6 +51,10 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
     private List<AnalysisHistory> historyList;
     private boolean isExpertMode = false;
     private boolean isAdmin = false;
+    private DocumentSnapshot lastVisible;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private static final int PAGE_SIZE = 20;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +80,7 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
         historyRecyclerView = findViewById(R.id.historyRecyclerView);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         btnClearHistory = findViewById(R.id.btnClearHistory);
+        btnLoadMore = findViewById(R.id.btnLoadMore);
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
         // Hide clear button for experts immediately
@@ -78,6 +89,7 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
         }
 
         btnClearHistory.setOnClickListener(v -> confirmClearHistory());
+        btnLoadMore.setOnClickListener(v -> fetchNextHistoryPage());
 
         // Bottom navigation visible only for experts
         if (bottomNavigation != null) {
@@ -155,37 +167,69 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
             btnClearHistory.setText("Loading...");
         }
 
-        // Fetch history from Firestore
+        historyList.clear();
+        adapter.notifyDataSetChanged();
+        lastVisible = null;
+        isLastPage = false;
+        fetchNextHistoryPage();
+    }
+
+    private void fetchNextHistoryPage() {
+        if (isLoading || isLastPage) {
+            return;
+        }
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null || currentUser.isAnonymous()) {
+            showEmptyState();
+            return;
+        }
+
+        isLoading = true;
+        setLoadMoreLoading(true);
+
         Query query;
         if (isExpertMode) {
-            // Expert mode: Load all users' history
             query = db.collection("analysis_history")
                     .orderBy("timestamp", Query.Direction.DESCENDING)
-                    .limit(100);
+                    .limit(PAGE_SIZE);
         } else {
-            // Farmer mode: Load only current user's history
             query = db.collection("analysis_history")
                     .whereEqualTo("userId", currentUser.getUid())
                     .orderBy("timestamp", Query.Direction.DESCENDING)
-                    .limit(50);
+                    .limit(PAGE_SIZE);
         }
-        
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
         query.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    historyList.clear();
-                    
-                    if (queryDocumentSnapshots.isEmpty()) {
+                    int startIndex = historyList.size();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        AnalysisHistory history = document.toObject(AnalysisHistory.class);
+                        historyList.add(history);
+                    }
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        List<DocumentSnapshot> docs = queryDocumentSnapshots.getDocuments();
+                        lastVisible = docs.get(docs.size() - 1);
+                    }
+                    if (historyList.isEmpty()) {
                         showEmptyState();
                     } else {
-                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                            AnalysisHistory history = document.toObject(AnalysisHistory.class);
-                            historyList.add(history);
-                        }
                         showHistoryList();
+                        int addedCount = historyList.size() - startIndex;
+                        if (addedCount > 0) {
+                            adapter.notifyItemRangeInserted(startIndex, addedCount);
+                        } else {
+                            adapter.notifyDataSetChanged();
+                        }
                     }
-                    
-                    adapter.notifyDataSetChanged();
-                    
+                    if (queryDocumentSnapshots.size() < PAGE_SIZE) {
+                        isLastPage = true;
+                    }
+                    updateLoadMoreVisibility();
                     // Reset button state (only for farmers)
                     if (!isExpertMode) {
                         btnClearHistory.setEnabled(true);
@@ -205,13 +249,18 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(this, "Failed to load history: " + errorMsg, Toast.LENGTH_LONG).show();
                     }
-                    
                     // Reset button state (only for farmers)
                     if (!isExpertMode) {
                         btnClearHistory.setEnabled(true);
                         btnClearHistory.setText("Clear All History");
                     }
-                    showEmptyState();
+                    if (historyList.isEmpty()) {
+                        showEmptyState();
+                    }
+                })
+                .addOnCompleteListener(task -> {
+                    isLoading = false;
+                    setLoadMoreLoading(false);
                 });
     }
 
@@ -220,6 +269,7 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
         historyRecyclerView.setVisibility(View.GONE);
         // Always hide clear button when empty (no history to clear)
         btnClearHistory.setVisibility(View.GONE);
+        btnLoadMore.setVisibility(View.GONE);
     }
 
     private void showHistoryList() {
@@ -231,6 +281,21 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
         } else {
             btnClearHistory.setVisibility(View.VISIBLE);
         }
+        updateLoadMoreVisibility();
+    }
+
+    private void updateLoadMoreVisibility() {
+        if (historyList.isEmpty() || isLastPage) {
+            btnLoadMore.setVisibility(View.GONE);
+        } else {
+            btnLoadMore.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void setLoadMoreLoading(boolean loading) {
+        if (btnLoadMore == null) return;
+        btnLoadMore.setEnabled(!loading);
+        btnLoadMore.setText(loading ? "Loading..." : "Load more");
     }
 
     private void confirmClearHistory() {
@@ -331,6 +396,16 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
             // Set confidence badge color based on the concise badge text
             int badgeColor = getConfidenceColor(badgeText);
             holder.confidenceBadge.setCardBackgroundColor(badgeColor);
+
+            String location = buildLocationLabel(history);
+            if (location != null) {
+                holder.locationText.setText("Location: " + location);
+                holder.locationText.setVisibility(View.VISIBLE);
+            } else {
+                holder.locationText.setVisibility(View.GONE);
+            }
+
+            bindHistoryImage(holder, history);
         }
 
         @Override
@@ -422,6 +497,8 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
             MaterialTextView confidenceText;
             MaterialTextView timestampText;
             MaterialCardView confidenceBadge;
+            DetectionImageView historyImage;
+            MaterialTextView locationText;
 
             public HistoryViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -430,7 +507,85 @@ public class AnalysisHistoryActivity extends AppCompatActivity {
                 confidenceText = itemView.findViewById(R.id.confidenceText);
                 timestampText = itemView.findViewById(R.id.timestampText);
                 confidenceBadge = itemView.findViewById(R.id.confidenceBadge);
+                historyImage = itemView.findViewById(R.id.ivHistoryImage);
+                locationText = itemView.findViewById(R.id.locationText);
             }
+        }
+
+        private void bindHistoryImage(HistoryViewHolder holder, AnalysisHistory history) {
+            String base64 = history.getImageBase64();
+            if (base64 == null || base64.trim().isEmpty()) {
+                holder.historyImage.setVisibility(View.GONE);
+                holder.historyImage.clearDetections();
+                return;
+            }
+            Bitmap bitmap = decodeBase64ToBitmap(base64);
+            if (bitmap == null) {
+                holder.historyImage.setVisibility(View.GONE);
+                holder.historyImage.clearDetections();
+                return;
+            }
+            holder.historyImage.setImageBitmap(scaleBitmap(bitmap, 900));
+            List<DetectionBox> boxes = history.getDetections();
+            if (boxes != null && !boxes.isEmpty()) {
+                holder.historyImage.setDetections(toDetections(boxes));
+            } else {
+                holder.historyImage.clearDetections();
+            }
+            holder.historyImage.setVisibility(View.VISIBLE);
+        }
+
+        private String buildLocationLabel(AnalysisHistory history) {
+            if (history == null) {
+                return null;
+            }
+            String municipality = history.getLocationMunicipality();
+            String barangay = history.getLocationBarangay();
+            if (municipality != null && !municipality.trim().isEmpty()
+                    && barangay != null && !barangay.trim().isEmpty()) {
+                return municipality.trim() + " - " + barangay.trim();
+            }
+            String combined = history.getLocationName();
+            if (combined != null && !combined.trim().isEmpty()) {
+                return combined.trim();
+            }
+            return null;
+        }
+
+        private List<Detection> toDetections(List<DetectionBox> boxes) {
+            List<Detection> detections = new ArrayList<>();
+            if (boxes == null) {
+                return detections;
+            }
+            for (DetectionBox box : boxes) {
+                if (box == null) {
+                    continue;
+                }
+                RectF rect = new RectF(box.getLeft(), box.getTop(), box.getRight(), box.getBottom());
+                detections.add(new Detection(rect, box.getConfidence(), box.getClassId(), box.getClassName()));
+            }
+            return detections;
+        }
+
+        private Bitmap decodeBase64ToBitmap(String base64) {
+            try {
+                byte[] data = Base64.decode(base64, Base64.DEFAULT);
+                return BitmapFactory.decodeByteArray(data, 0, data.length);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+
+        private Bitmap scaleBitmap(Bitmap bitmap, int maxDimension) {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            if (width <= maxDimension && height <= maxDimension) {
+                return bitmap;
+            }
+            float scale = Math.min((float) maxDimension / width, (float) maxDimension / height);
+            int newWidth = Math.round(width * scale);
+            int newHeight = Math.round(height * scale);
+            return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
         }
     }
 }

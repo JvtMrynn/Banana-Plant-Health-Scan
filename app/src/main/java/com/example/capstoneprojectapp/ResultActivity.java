@@ -18,8 +18,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.material.textview.MaterialTextView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -38,10 +41,14 @@ public class ResultActivity extends AppCompatActivity {
     private LinearLayout detectionCardContainer;
     private View severityIndicator;
     private MaterialButton btnBackToDashboard;
+    private MaterialButton btnConsultExpert;
     private MaterialCardView resultCard;
     private FirebaseFirestore db;
     private com.example.capstoneprojectapp.data.repo.DataRepository dataRepository;
     private boolean selectedDetectionView;
+    private String analysisTitleForConsultation;
+    private String analysisSummaryForConsultation;
+    private long analysisTimestampForConsultation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +78,13 @@ public class ResultActivity extends AppCompatActivity {
         detectionCardContainer = findViewById(R.id.detectionCardContainer);
         severityIndicator = findViewById(R.id.severityIndicator);
         btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
+        btnConsultExpert = findViewById(R.id.btnConsultExpert);
         resultCard = findViewById(R.id.resultCard);
 
         btnBackToDashboard.setOnClickListener(v -> finish());
+        if (btnConsultExpert != null) {
+            btnConsultExpert.setOnClickListener(v -> openConsultationRequest());
+        }
 
         // Tap image to view fullscreen with bounding boxes
         analyzedImageView.setOnClickListener(v -> {
@@ -96,6 +107,7 @@ public class ResultActivity extends AppCompatActivity {
         Intent intent = getIntent();
         selectedDetectionView = intent.getBooleanExtra("selected_detection_view", false);
         boolean isError = intent.getBooleanExtra("is_error", false);
+        analysisTimestampForConsultation = System.currentTimeMillis();
 
         // Retrieve the analyzed image from ImageHolder
         Bitmap analyzedImage = ImageHolder.getInstance().getImage();
@@ -128,10 +140,13 @@ public class ResultActivity extends AppCompatActivity {
         if (!highConfidenceDetections.isEmpty()) {
             analyzedImageView.setDetections(highConfidenceDetections);
             detectionsListText.setText(summaryText);
+            analysisSummaryForConsultation = summaryText;
             if (distinctDetections.size() > 5) {
                 btnShowAllDetections.setVisibility(View.VISIBLE);
                 btnShowAllDetections.setOnClickListener(v -> {
-                    detectionsListText.setText(buildDetectionSummaryText(distinctDetections, true));
+                    String allText = buildDetectionSummaryText(distinctDetections, true);
+                    detectionsListText.setText(allText);
+                    analysisSummaryForConsultation = allText;
                     btnShowAllDetections.setVisibility(View.GONE);
                 });
             } else {
@@ -167,6 +182,7 @@ public class ResultActivity extends AppCompatActivity {
             description = getString(R.string.single_detection_desc);
             confidence = String.format(Locale.getDefault(), "%.1f%%", only.getConfidence() * 100f);
         }
+        analysisTitleForConsultation = diseaseName;
         
         // Get detection summary if available
         String detectionsSummary = (summaryText != null && !summaryText.isEmpty())
@@ -283,6 +299,10 @@ public class ResultActivity extends AppCompatActivity {
 private void bindDetails(String diseaseName, String scientificName, String description, String management, String prevention, Intent intent) {
         // Set disease name
         diseaseNameText.setText(diseaseName != null ? diseaseName : "Unknown Disease");
+        analysisTitleForConsultation = diseaseNameText.getText().toString();
+        if (analysisSummaryForConsultation == null || analysisSummaryForConsultation.trim().isEmpty()) {
+            analysisSummaryForConsultation = detectionsListText.getText().toString();
+        }
 
     // Set scientific name (prefer expert-provided)
     String sci = (scientificName != null && !scientificName.trim().isEmpty()) ? scientificName : getScientificName(diseaseName);
@@ -460,6 +480,8 @@ private void bindDetails(String diseaseName, String scientificName, String descr
         diseaseNameText.setText(getString(R.string.no_confidence_title));
         scientificNameText.setText(getString(R.string.scientific_unknown));
         definitionText.setText(getString(R.string.no_high_confidence_details));
+        analysisTitleForConsultation = diseaseNameText.getText().toString();
+        analysisSummaryForConsultation = detectionsListText.getText().toString();
 
         View managementHeader = findViewById(R.id.managementHeaderText);
         managementHeader.setVisibility(View.GONE);
@@ -479,6 +501,28 @@ private void bindDetails(String diseaseName, String scientificName, String descr
                 .translationY(0f)
                 .setDuration(300)
                 .start();
+    }
+
+    private void openConsultationRequest() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null || currentUser.isAnonymous()) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Sign in required")
+                    .setMessage("Please register or sign in to contact an expert.")
+                    .setPositiveButton("Register", (dialog, which) -> {
+                        startActivity(new Intent(this, RegistrationActivity.class));
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return;
+        }
+
+        Intent intent = new Intent(this, ConsultationRequestActivity.class);
+        intent.putExtra(ConsultationRequestActivity.EXTRA_FROM_RESULT, true);
+        intent.putExtra(ConsultationRequestActivity.EXTRA_ANALYSIS_TITLE, analysisTitleForConsultation);
+        intent.putExtra(ConsultationRequestActivity.EXTRA_ANALYSIS_SUMMARY, analysisSummaryForConsultation);
+        intent.putExtra(ConsultationRequestActivity.EXTRA_ANALYSIS_TIMESTAMP, analysisTimestampForConsultation);
+        startActivity(intent);
     }
 
     // Simple defaults for common classes used by the model, used if Firestore has no entry
@@ -531,6 +575,8 @@ private void bindDetails(String diseaseName, String scientificName, String descr
         preventionText.setVisibility(View.GONE);
         treatableStatusText.setVisibility(View.GONE);
         severityIndicator.setBackgroundColor(getColor(android.R.color.holo_red_dark));
+        analysisTitleForConsultation = "Analysis Result";
+        analysisSummaryForConsultation = errorMessage != null ? errorMessage : "Analysis error";
     }
 
     private String getScientificName(String diseaseName) {

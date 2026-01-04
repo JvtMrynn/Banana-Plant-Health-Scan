@@ -192,14 +192,10 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void showChangePasswordDialog() {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_consultation_request, null);
-        TextInputEditText currentPasswordInput = dialogView.findViewById(R.id.etDiseaseName);
-        TextInputEditText newPasswordInput = dialogView.findViewById(R.id.etDescription);
-        TextInputEditText confirmPasswordInput = dialogView.findViewById(R.id.etMessage);
-
-        currentPasswordInput.setHint("Current Password");
-        newPasswordInput.setHint("New Password");
-        confirmPasswordInput.setHint("Confirm New Password");
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
+        TextInputEditText currentPasswordInput = dialogView.findViewById(R.id.etCurrentPassword);
+        TextInputEditText newPasswordInput = dialogView.findViewById(R.id.etNewPassword);
+        TextInputEditText confirmPasswordInput = dialogView.findViewById(R.id.etConfirmPassword);
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Change Password")

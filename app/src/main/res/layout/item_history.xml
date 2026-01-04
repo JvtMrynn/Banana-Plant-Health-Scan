@@ -55,6 +55,27 @@
 
         </LinearLayout>
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/locationText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Location: Barangay 1"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="@color/Muted_Gray"
+            android:visibility="gone" />
+
+        <com.example.capstoneprojectapp.DetectionImageView
+            android:id="@+id/ivHistoryImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_svg"
+            android:contentDescription="Analysis image"
+            android:visibility="gone" />
+
         <!-- Detections summary (readable, wraps to 2 lines) -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/detectionsSummaryText"

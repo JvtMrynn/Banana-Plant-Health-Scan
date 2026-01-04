@@ -9,6 +9,11 @@ public class AnalysisHistory {
     private String confidence;
     private long timestamp;
     private String imagePath; // Path to saved image (optional)
+    private String imageBase64; // Compressed image for sharing (optional)
+    private java.util.List<DetectionBox> detections;
+    private String locationName;
+    private String locationMunicipality;
+    private String locationBarangay;
 
     // Default constructor required for Firestore
     public AnalysisHistory() {
@@ -96,5 +101,45 @@ public class AnalysisHistory {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
+    public java.util.List<DetectionBox> getDetections() {
+        return detections;
+    }
+
+    public void setDetections(java.util.List<DetectionBox> detections) {
+        this.detections = detections;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationMunicipality() {
+        return locationMunicipality;
+    }
+
+    public void setLocationMunicipality(String locationMunicipality) {
+        this.locationMunicipality = locationMunicipality;
+    }
+
+    public String getLocationBarangay() {
+        return locationBarangay;
+    }
+
+    public void setLocationBarangay(String locationBarangay) {
+        this.locationBarangay = locationBarangay;
     }
 }

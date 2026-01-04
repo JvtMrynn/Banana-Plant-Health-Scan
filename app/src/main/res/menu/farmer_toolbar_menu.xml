@@ -11,4 +11,9 @@
         android:icon="@android:drawable/ic_menu_recent_history"
         android:title="History"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_about"
+        android:icon="@android:drawable/ic_menu_help"
+        android:title="About"
+        app:showAsAction="ifRoom" />
 </menu>

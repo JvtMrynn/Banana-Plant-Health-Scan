@@ -44,6 +44,16 @@
                     android:layout_marginBottom="8dp" />
 
                 <TextView
+                    android:id="@+id/tvLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Location: Example"
+                    android:textSize="12sp"
+                    android:textColor="@color/Muted_Gray"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/tvFarmerMessage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -51,6 +61,45 @@
                     android:textSize="13sp"
                     android:textColor="@color/Muted_Gray"
                     android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/tvAttachedAnalysis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Attached analysis: Black Sigatoka - 92%"
+                    android:textSize="12sp"
+                    android:textColor="@color/Muted_Gray"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/ivAttachedImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginTop="8dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Attached analysis image"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvFarmerFollowUp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Farmer follow-up will appear here"
+                    android:textSize="12sp"
+                    android:textColor="@color/Near_Black"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvFarmerFollowUpTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sent 1 hour ago"
+                    android:textSize="11sp"
+                    android:textColor="@color/Muted_Gray"
+                    android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

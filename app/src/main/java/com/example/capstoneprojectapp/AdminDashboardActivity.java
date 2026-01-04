@@ -6,11 +6,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,10 +28,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -38,13 +44,19 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private MaterialToolbar toolbar;
     private TextView welcomeText;
-    private MaterialCardView cardDiseaseInfo, cardModelInfo, cardAnalysisHistory, cardConsultationRequests, cardUserManagement, cardUpdateModel;
+    private MaterialCardView cardDiseaseInfo, cardModelInfo, cardAnalysisHistory, cardReports, cardConsultationRequests, cardUserManagement, cardUpdateModel;
     private BottomNavigationView bottomNavigation;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "LoginPrefs";
+    private static final String KEY_LAST_MUNICIPALITY = "lastMunicipality";
+    private static final String KEY_LAST_BARANGAY = "lastBarangay";
+    private String selectedMunicipality;
+    private String selectedBarangay;
+    private String municipalityPlaceholder;
+    private String barangayPlaceholder;
 
     // Detection UI and logic
     private DetectionImageView adminImageView;
@@ -81,6 +93,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardDiseaseInfo = findViewById(R.id.cardDiseaseInfo);
         cardModelInfo = findViewById(R.id.cardModelInfo);
         cardAnalysisHistory = findViewById(R.id.cardAnalysisHistory);
+        cardReports = findViewById(R.id.cardReports);
         cardConsultationRequests = findViewById(R.id.cardConsultationRequests);
         cardUserManagement = findViewById(R.id.cardUserManagement);
         cardUpdateModel = findViewById(R.id.cardUpdateModel);
@@ -134,6 +147,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
             intent.putExtra("EXPERT_MODE", true);
             startActivity(intent);
         });
+        cardReports.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ReportsActivity.class);
+            intent.putExtra("ADMIN_MODE", true);
+            startActivity(intent);
+        });
         cardConsultationRequests.setOnClickListener(v -> startActivity(new Intent(this, ConsultationRequestsActivity.class)));
         cardUserManagement.setOnClickListener(v -> startActivity(new Intent(this, AdminUsersActivity.class)));
         cardUpdateModel.setOnClickListener(v -> pickAndInstallModel());
@@ -146,7 +164,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
             if (checkStoragePermission()) openGallery(); else requestStoragePermission();
         });
         btnAnalyze.setOnClickListener(v -> {
-            if (selectedImage != null) analyzeImage(); else Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show();
+            if (selectedImage != null) {
+                confirmLocationThenAnalyze();
+            } else {
+                Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show();
+            }
         });
         btnClear.setOnClickListener(v -> clearImage());
 
@@ -224,6 +246,101 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void confirmLocationThenAnalyze() {
+        municipalityPlaceholder = getString(R.string.municipality_placeholder);
+        barangayPlaceholder = getString(R.string.barangay_placeholder);
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_location_confirm, null);
+        MaterialAutoCompleteTextView municipalityDropdown = dialogView.findViewById(R.id.municipalityDropdown);
+        TextInputLayout barangayInputLayout = dialogView.findViewById(R.id.barangayInputLayout);
+        MaterialAutoCompleteTextView barangayDropdown = dialogView.findViewById(R.id.barangayDropdown);
+
+        String[] municipalities = getResources().getStringArray(R.array.municipality_options);
+        ArrayAdapter<String> municipalityAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, municipalities);
+        municipalityDropdown.setAdapter(municipalityAdapter);
+
+        String savedMunicipality = sharedPreferences.getString(KEY_LAST_MUNICIPALITY, selectedMunicipality);
+        String validMunicipality = isValidMunicipalitySelection(savedMunicipality) ? savedMunicipality : null;
+        selectedMunicipality = validMunicipality;
+        if (validMunicipality != null) {
+            municipalityDropdown.setText(validMunicipality, false);
+        } else {
+            municipalityDropdown.setText(municipalityPlaceholder, false);
+        }
+
+        setupBarangayAdapter(validMunicipality, barangayInputLayout, barangayDropdown);
+
+        String savedBarangay = sharedPreferences.getString(KEY_LAST_BARANGAY, selectedBarangay);
+        String validBarangay = isValidBarangaySelection(validMunicipality, savedBarangay) ? savedBarangay : null;
+        selectedBarangay = validBarangay;
+        if (validBarangay != null) {
+            barangayDropdown.setText(validBarangay, false);
+        } else {
+            barangayDropdown.setText(barangayPlaceholder, false);
+        }
+
+        municipalityDropdown.setOnItemClickListener((parent, view, position, id) -> {
+            String selection = municipalities[position];
+            if (selection.equals(municipalityPlaceholder)) {
+                selectedMunicipality = null;
+            } else {
+                selectedMunicipality = selection;
+            }
+            selectedBarangay = null;
+            setupBarangayAdapter(selectedMunicipality, barangayInputLayout, barangayDropdown);
+            barangayDropdown.setText(barangayPlaceholder, false);
+        });
+
+        barangayDropdown.setOnItemClickListener((parent, view, position, id) -> {
+            String[] barangays = getBarangayOptions(selectedMunicipality);
+            if (barangays == null || position >= barangays.length) {
+                return;
+            }
+            String selection = barangays[position];
+            if (selection.equals(barangayPlaceholder)) {
+                selectedBarangay = null;
+            } else {
+                selectedBarangay = selection;
+            }
+        });
+
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Confirm location")
+                .setView(dialogView)
+                .setPositiveButton("Analyze", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            android.widget.Button analyzeButton = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+            analyzeButton.setOnClickListener(v -> {
+                if (!isLocationSelected()) {
+                    Toast.makeText(this, "Please select your municipality and barangay", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                selectedMunicipality = municipalityDropdown.getText() != null
+                        ? municipalityDropdown.getText().toString().trim()
+                        : selectedMunicipality;
+                selectedBarangay = barangayDropdown.getText() != null
+                        ? barangayDropdown.getText().toString().trim()
+                        : selectedBarangay;
+                if (!isLocationSelected()) {
+                    Toast.makeText(this, "Please select your municipality and barangay", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                sharedPreferences.edit()
+                        .putString(KEY_LAST_MUNICIPALITY, selectedMunicipality)
+                        .putString(KEY_LAST_BARANGAY, selectedBarangay)
+                        .apply();
+                dialog.dismiss();
+                analyzeImage();
+            });
+        });
+
+        dialog.show();
+    }
+
     private void analyzeImage() {
         btnAnalyze.setEnabled(false);
         btnAnalyze.setText("Detecting...");
@@ -282,8 +399,190 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 detectionSummary,
                 System.currentTimeMillis()
         );
+        history.setImageBase64(encodeBitmapToBase64(selectedImage));
+        history.setDetections(toDetectionBoxes(detections));
+        history.setLocationMunicipality(getSelectedMunicipalityOrNull());
+        history.setLocationBarangay(getSelectedBarangayOrNull());
+        history.setLocationName(buildLocationName());
 
         db.collection("analysis_history").document(historyId).set(history);
+    }
+
+    private boolean isLocationSelected() {
+        return selectedMunicipality != null
+                && !selectedMunicipality.trim().isEmpty()
+                && !selectedMunicipality.equals(municipalityPlaceholder)
+                && selectedBarangay != null
+                && !selectedBarangay.trim().isEmpty()
+                && !selectedBarangay.equals(barangayPlaceholder);
+    }
+
+    private String getSelectedMunicipalityOrNull() {
+        return selectedMunicipality != null && !selectedMunicipality.equals(municipalityPlaceholder)
+                ? selectedMunicipality
+                : null;
+    }
+
+    private String getSelectedBarangayOrNull() {
+        return selectedBarangay != null && !selectedBarangay.equals(barangayPlaceholder)
+                ? selectedBarangay
+                : null;
+    }
+
+    private String buildLocationName() {
+        if (!isLocationSelected()) {
+            return null;
+        }
+        return selectedMunicipality + " - " + selectedBarangay;
+    }
+
+    private void setupBarangayAdapter(String municipality,
+                                      TextInputLayout barangayInputLayout,
+                                      MaterialAutoCompleteTextView barangayDropdown) {
+        String[] barangays = getBarangayOptions(municipality);
+        if (barangays == null) {
+            barangays = new String[]{barangayPlaceholder};
+        }
+        ArrayAdapter<String> barangayAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, barangays);
+        barangayDropdown.setAdapter(barangayAdapter);
+        boolean enabled = municipality != null && !municipality.equals(municipalityPlaceholder);
+        barangayInputLayout.setEnabled(enabled);
+        barangayDropdown.setEnabled(enabled);
+    }
+
+    private String[] getBarangayOptions(String municipality) {
+        if (municipality == null || municipality.equals(municipalityPlaceholder)) {
+            return null;
+        }
+        int arrayId = getBarangayArrayId(municipality);
+        return arrayId != 0 ? getResources().getStringArray(arrayId) : null;
+    }
+
+    private boolean isValidMunicipalitySelection(String municipality) {
+        if (municipality == null || municipality.trim().isEmpty()) {
+            return false;
+        }
+        if (municipalityPlaceholder != null && municipality.equals(municipalityPlaceholder)) {
+            return false;
+        }
+        String[] options = getResources().getStringArray(R.array.municipality_options);
+        for (String option : options) {
+            if (municipality.equals(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isValidBarangaySelection(String municipality, String barangay) {
+        if (barangay == null || barangay.trim().isEmpty()) {
+            return false;
+        }
+        if (barangay.equals(barangayPlaceholder)) {
+            return false;
+        }
+        String[] options = getBarangayOptions(municipality);
+        if (options == null) {
+            return false;
+        }
+        for (String option : options) {
+            if (barangay.equals(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int getBarangayArrayId(String municipality) {
+        if (municipality == null) {
+            return 0;
+        }
+        switch (municipality) {
+            case "Anahawan":
+                return R.array.barangays_anahawan;
+            case "Bontoc":
+                return R.array.barangays_bontoc;
+            case "Hinunangan":
+                return R.array.barangays_hinunangan;
+            case "Hinundayan":
+                return R.array.barangays_hinundayan;
+            case "Libagon":
+                return R.array.barangays_libagon;
+            case "Liloan":
+                return R.array.barangays_liloan;
+            case "Limasawa":
+                return R.array.barangays_limasawa;
+            case "Maasin City":
+                return R.array.barangays_maasin_city;
+            case "Macrohon":
+                return R.array.barangays_macrohon;
+            case "Malitbog":
+                return R.array.barangays_malitbog;
+            case "Padre Burgos":
+                return R.array.barangays_padre_burgos;
+            case "Pintuyan":
+                return R.array.barangays_pintuyan;
+            case "Saint Bernard":
+                return R.array.barangays_saint_bernard;
+            case "San Francisco":
+                return R.array.barangays_san_francisco;
+            case "San Juan":
+                return R.array.barangays_san_juan;
+            case "San Ricardo":
+                return R.array.barangays_san_ricardo;
+            case "Silago":
+                return R.array.barangays_silago;
+            case "Sogod":
+                return R.array.barangays_sogod;
+            case "Tomas Oppus":
+                return R.array.barangays_tomas_oppus;
+            default:
+                return 0;
+        }
+    }
+
+    private String encodeBitmapToBase64(Bitmap bitmap) {
+        if (bitmap == null) return null;
+        Bitmap scaled = scaleBitmap(bitmap, 1000);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+        return Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP);
+    }
+
+    private Bitmap scaleBitmap(Bitmap bitmap, int maxDimension) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        if (width <= maxDimension && height <= maxDimension) {
+            return bitmap;
+        }
+        float scale = Math.min((float) maxDimension / width, (float) maxDimension / height);
+        int newWidth = Math.round(width * scale);
+        int newHeight = Math.round(height * scale);
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+    }
+
+    private List<DetectionBox> toDetectionBoxes(List<Detection> detections) {
+        List<DetectionBox> boxes = new ArrayList<>();
+        if (detections == null) {
+            return boxes;
+        }
+        for (Detection det : detections) {
+            if (det == null || det.getBoundingBox() == null) {
+                continue;
+            }
+            RectF bbox = det.getBoundingBox();
+            boxes.add(new DetectionBox(
+                    bbox.left,
+                    bbox.top,
+                    bbox.right,
+                    bbox.bottom,
+                    det.getConfidence(),
+                    det.getClassId(),
+                    det.getClassName()
+            ));
+        }
+        return boxes;
     }
 
     private boolean checkCameraPermission() {

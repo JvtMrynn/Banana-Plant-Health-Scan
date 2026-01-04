@@ -52,6 +52,52 @@
                 android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Attach analysis history (optional)"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/Near_Black"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSelectHistory"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select from history" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClearHistorySelection"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Clear" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvSelectedHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No analysis attached"
+                android:textSize="12sp"
+                android:textColor="@color/Muted_Gray"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

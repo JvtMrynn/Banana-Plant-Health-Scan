@@ -72,6 +72,9 @@ dependencies {
 
     // WorkManager for background sync
     implementation("androidx.work:work-runtime:2.9.0")
+
+    // Charts
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
     
     // Mapping dependencies removed as expert mapping feature was deleted
 

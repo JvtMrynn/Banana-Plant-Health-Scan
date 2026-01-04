@@ -54,6 +54,11 @@
             android:name=".AnalysisHistoryActivity"
             android:exported="false"
             android:parentActivityName=".FarmerDashboardActivity" />
+
+        <activity
+            android:name=".ReportsActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
         
         <activity
             android:name=".ExpertDashboardActivity"
@@ -79,9 +84,19 @@
             android:name=".ConsultationRequestsActivity"
             android:exported="false"
             android:parentActivityName=".ExpertDashboardActivity" />
+
+        <activity
+            android:name=".ConsultationResponseActivity"
+            android:exported="false"
+            android:parentActivityName=".ExpertDashboardActivity" />
         
         <activity
             android:name=".MyConsultationsActivity"
+            android:exported="false"
+            android:parentActivityName=".FarmerDashboardActivity" />
+
+        <activity
+            android:name=".ConsultationRequestActivity"
             android:exported="false"
             android:parentActivityName=".FarmerDashboardActivity" />
 

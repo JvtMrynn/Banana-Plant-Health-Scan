@@ -56,7 +56,7 @@
         android:layout_marginBottom="16dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnBackToDashboard"
+        app:layout_constraintBottom_toTopOf="@+id/btnConsultExpert"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/offlineBanner">
@@ -153,7 +153,7 @@
                     android:id="@+id/diseaseNameText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Disease Name"
+                    android:text="Identifying..."
                     android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                     android:textStyle="bold"
                     android:textColor="@android:color/black"
@@ -286,6 +286,23 @@
             </LinearLayout>
         </ScrollView>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConsultExpert"
+        style="@style/Widget.Material3.Button.ElevatedButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text="Consult Expert"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/Deep_Natural_Green"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="12dp"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnBackToDashboard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Back to Dashboard Button -->
     <com.google.android.material.button.MaterialButton

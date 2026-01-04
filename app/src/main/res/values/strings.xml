@@ -18,4 +18,588 @@
     <string name="scientific_unknown">Scientific name not available</string>
     <string name="status_consult_expert">Status: Consult agricultural expert</string>
     <string name="no_high_confidence_details">The model detected signals, but none met the minimum confidence threshold. Please retake the photo for a clearer result.</string>
+    <string name="municipality_placeholder">Select municipality</string>
+    <string name="barangay_placeholder">Select barangay</string>
+    <string name="reports_range_label">Range: %1$s</string>
+    <string name="reports_range_label_all_users">Range: %1$s (All users)</string>
+
+    <string-array name="municipality_options">
+        <item>@string/municipality_placeholder</item>
+        <item>Anahawan</item>
+        <item>Bontoc</item>
+        <item>Hinunangan</item>
+        <item>Hinundayan</item>
+        <item>Libagon</item>
+        <item>Liloan</item>
+        <item>Limasawa</item>
+        <item>Maasin City</item>
+        <item>Macrohon</item>
+        <item>Malitbog</item>
+        <item>Padre Burgos</item>
+        <item>Pintuyan</item>
+        <item>Saint Bernard</item>
+        <item>San Francisco</item>
+        <item>San Juan</item>
+        <item>San Ricardo</item>
+        <item>Silago</item>
+        <item>Sogod</item>
+        <item>Tomas Oppus</item>
+    </string-array>
+    <string-array name="barangays_anahawan">
+        <item>@string/barangay_placeholder</item>
+        <item>Amagusan</item>
+        <item>Calintaan</item>
+        <item>Canlabian</item>
+        <item>Capacuhan</item>
+        <item>Cogon</item>
+        <item>Kagingkingan</item>
+        <item>Lewing</item>
+        <item>Lo-ok</item>
+        <item>Mahalo</item>
+        <item>Mainit</item>
+        <item>Manigawong</item>
+        <item>Poblacion</item>
+        <item>San Vicente</item>
+        <item>Tagup-on</item>
+    </string-array>
+    <string-array name="barangays_bontoc">
+        <item>@string/barangay_placeholder</item>
+        <item>Anahao</item>
+        <item>Banahao</item>
+        <item>Baugo</item>
+        <item>Beniton</item>
+        <item>Buenavista</item>
+        <item>Bunga</item>
+        <item>Casao</item>
+        <item>Catmon</item>
+        <item>Catoogan</item>
+        <item>Cawayanan</item>
+        <item>Dao</item>
+        <item>Divisoria</item>
+        <item>Esperanza</item>
+        <item>Guinsangaan</item>
+        <item>Hibagwan</item>
+        <item>Hilaan</item>
+        <item>Himakilo</item>
+        <item>Hitawos</item>
+        <item>Lanao</item>
+        <item>Lawgawan</item>
+        <item>Mahayahay</item>
+        <item>Malbago</item>
+        <item>Mauylab</item>
+        <item>Olisihan</item>
+        <item>Paku</item>
+        <item>Pamahawan</item>
+        <item>Pamigsian</item>
+        <item>Pangi</item>
+        <item>Poblacion</item>
+        <item>Pong-on</item>
+        <item>Sampongon</item>
+        <item>San Ramon</item>
+        <item>San Vicente</item>
+        <item>Santa Cruz</item>
+        <item>Santo Niño</item>
+        <item>Taa</item>
+        <item>Talisay</item>
+        <item>Taytagan</item>
+        <item>Tuburan</item>
+        <item>Union</item>
+    </string-array>
+    <string-array name="barangays_hinunangan">
+        <item>@string/barangay_placeholder</item>
+        <item>Ambacon</item>
+        <item>Badiangon</item>
+        <item>Bangcas A</item>
+        <item>Bangcas B</item>
+        <item>Biasong</item>
+        <item>Bugho</item>
+        <item>Calag-itan</item>
+        <item>Calayugan</item>
+        <item>Calinao</item>
+        <item>Canipaan</item>
+        <item>Catublian</item>
+        <item>Ilaya</item>
+        <item>Ingan</item>
+        <item>Labrador</item>
+        <item>Libas</item>
+        <item>Lumbog</item>
+        <item>Manalog</item>
+        <item>Manlico</item>
+        <item>Matin-ao</item>
+        <item>Nava</item>
+        <item>Nueva Esperanza</item>
+        <item>Otama</item>
+        <item>Palongpong</item>
+        <item>Panalaron</item>
+        <item>Patong</item>
+        <item>Poblacion</item>
+        <item>Pondol</item>
+        <item>Salog</item>
+        <item>Salvacion</item>
+        <item>San Pablo Island</item>
+        <item>San Pedro Island</item>
+        <item>Santo Niño I</item>
+        <item>Santo Niño II</item>
+        <item>Tahusan</item>
+        <item>Talisay</item>
+        <item>Tawog</item>
+        <item>Toptop</item>
+        <item>Tuburan</item>
+        <item>Union</item>
+        <item>Upper Bantawon</item>
+    </string-array>
+    <string-array name="barangays_hinundayan">
+        <item>@string/barangay_placeholder</item>
+        <item>Amaga</item>
+        <item>Ambao</item>
+        <item>An-an</item>
+        <item>Baculod</item>
+        <item>Biasong</item>
+        <item>Bugho</item>
+        <item>Cabulisan</item>
+        <item>Cat-iwing</item>
+        <item>District I</item>
+        <item>District II</item>
+        <item>District III</item>
+        <item>Hubasan</item>
+        <item>Lungsodaan</item>
+        <item>Navalita</item>
+        <item>Plaridel</item>
+        <item>Sabang</item>
+        <item>Sagbok</item>
+    </string-array>
+    <string-array name="barangays_libagon">
+        <item>@string/barangay_placeholder</item>
+        <item>Biasong</item>
+        <item>Bogasong</item>
+        <item>Cawayan</item>
+        <item>Gakat</item>
+        <item>Jubas</item>
+        <item>Magkasag</item>
+        <item>Mayuga</item>
+        <item>Nahaong</item>
+        <item>Nahulid</item>
+        <item>Otikon</item>
+        <item>Pangi</item>
+        <item>Punta</item>
+        <item>Talisay</item>
+        <item>Tigbao</item>
+    </string-array>
+    <string-array name="barangays_liloan">
+        <item>@string/barangay_placeholder</item>
+        <item>Amaga</item>
+        <item>Anilao</item>
+        <item>Bahay</item>
+        <item>Cagbungalon</item>
+        <item>Calian</item>
+        <item>Caligangan</item>
+        <item>Candayuman</item>
+        <item>Catig</item>
+        <item>Estela</item>
+        <item>Fatima</item>
+        <item>Gud-an</item>
+        <item>Guintoylan</item>
+        <item>Himayangan</item>
+        <item>Ilag</item>
+        <item>Magaupas</item>
+        <item>Malangsa</item>
+        <item>Molopolo</item>
+        <item>Pandan</item>
+        <item>Poblacion</item>
+        <item>Pres. Quezon</item>
+        <item>President Roxas</item>
+        <item>San Isidro</item>
+        <item>San Roque</item>
+        <item>Tabugon</item>
+    </string-array>
+    <string-array name="barangays_limasawa">
+        <item>@string/barangay_placeholder</item>
+        <item>Cabulihan</item>
+        <item>Lugsongan</item>
+        <item>Magallanes</item>
+        <item>San Agustin</item>
+        <item>San Bernardo</item>
+        <item>Triana</item>
+    </string-array>
+    <string-array name="barangays_maasin_city">
+        <item>@string/barangay_placeholder</item>
+        <item>Abgao</item>
+        <item>Acasia</item>
+        <item>Asuncion</item>
+        <item>Bactul I</item>
+        <item>Bactul II</item>
+        <item>Badiang</item>
+        <item>Bagtican</item>
+        <item>Basak</item>
+        <item>Bato I</item>
+        <item>Bato II</item>
+        <item>Batuan</item>
+        <item>Baugo</item>
+        <item>Bilibol</item>
+        <item>Bogo</item>
+        <item>Cabadiangan</item>
+        <item>Cabulihan</item>
+        <item>Cagnituan</item>
+        <item>Cambooc</item>
+        <item>Cansirong</item>
+        <item>Canturing</item>
+        <item>Canyuom</item>
+        <item>Combado</item>
+        <item>Dongon</item>
+        <item>Gawisan</item>
+        <item>Guadalupe</item>
+        <item>Hanginan</item>
+        <item>Hantag</item>
+        <item>Hinapu Daku</item>
+        <item>Hinapu Gamay</item>
+        <item>Ibarra</item>
+        <item>Isagani</item>
+        <item>Laboon</item>
+        <item>Lanao</item>
+        <item>Lib-og</item>
+        <item>Libertad</item>
+        <item>Libhu</item>
+        <item>Lonoy</item>
+        <item>Lunas</item>
+        <item>Mahayahay</item>
+        <item>Malapoc Norte</item>
+        <item>Malapoc Sur</item>
+        <item>Mambajao</item>
+        <item>Manhilo</item>
+        <item>Mantahan</item>
+        <item>Maria Clara</item>
+        <item>Matin-ao</item>
+        <item>Nasaug</item>
+        <item>Nati</item>
+        <item>Nonok Norte</item>
+        <item>Nonok Sur</item>
+        <item>Panan-awan</item>
+        <item>Pansaan</item>
+        <item>Pasay</item>
+        <item>Pinascohan</item>
+        <item>Rizal</item>
+        <item>San Agustin</item>
+        <item>San Isidro</item>
+        <item>San Jose</item>
+        <item>San Rafael</item>
+        <item>Santa Cruz</item>
+        <item>Santa Rosa</item>
+        <item>Santo Niño</item>
+        <item>Santo Rosario</item>
+        <item>Soro-soro</item>
+        <item>Tagnipa</item>
+        <item>Tam-is</item>
+        <item>Tawid</item>
+        <item>Tigbawan</item>
+        <item>Tomoy-tomoy</item>
+        <item>Tunga-tunga</item>
+    </string-array>
+    <string-array name="barangays_macrohon">
+        <item>@string/barangay_placeholder</item>
+        <item>Aguinaldo</item>
+        <item>Amparo</item>
+        <item>Asuncion</item>
+        <item>Bagong Silang</item>
+        <item>Buscayan</item>
+        <item>Cambaro</item>
+        <item>Canlusay</item>
+        <item>Danao</item>
+        <item>Flordeliz</item>
+        <item>Guadalupe</item>
+        <item>Ichon</item>
+        <item>Ilihan</item>
+        <item>Laray</item>
+        <item>Lower Villa Jacinta</item>
+        <item>Mabini</item>
+        <item>Mohon</item>
+        <item>Molopolo</item>
+        <item>Rizal</item>
+        <item>Salvador</item>
+        <item>San Isidro</item>
+        <item>San Joaquin</item>
+        <item>San Roque</item>
+        <item>San Vicente</item>
+        <item>San Vicente Poblacion</item>
+        <item>Santa Cruz</item>
+        <item>Santo Niño</item>
+        <item>Santo Rosario</item>
+        <item>Sindangan</item>
+        <item>Upper Ichon</item>
+        <item>Upper Villa Jacinta</item>
+    </string-array>
+    <string-array name="barangays_malitbog">
+        <item>@string/barangay_placeholder</item>
+        <item>Abgao</item>
+        <item>Asuncion</item>
+        <item>Aurora</item>
+        <item>Benit</item>
+        <item>Caaga</item>
+        <item>Cabul-anonan</item>
+        <item>Cadaruhan</item>
+        <item>Cadaruhan Sur</item>
+        <item>Candatag</item>
+        <item>Cantamuac</item>
+        <item>Caraatan</item>
+        <item>Concepcion</item>
+        <item>Fatima</item>
+        <item>Guinabonan</item>
+        <item>Iba</item>
+        <item>Juangon</item>
+        <item>Kauswagan</item>
+        <item>Lambonao</item>
+        <item>Mahayahay</item>
+        <item>Maningning</item>
+        <item>Maujo</item>
+        <item>New Katipunan</item>
+        <item>Pancil</item>
+        <item>Pasil</item>
+        <item>Sabang</item>
+        <item>San Antonio</item>
+        <item>San Isidro</item>
+        <item>San Jose</item>
+        <item>San Roque</item>
+        <item>San Vicente</item>
+        <item>Sangahon</item>
+        <item>Santa Cruz</item>
+        <item>Santo Niño</item>
+        <item>Taliwa</item>
+        <item>Tigbawan I</item>
+        <item>Tigbawan II</item>
+        <item>Timba</item>
+    </string-array>
+    <string-array name="barangays_padre_burgos">
+        <item>@string/barangay_placeholder</item>
+        <item>Buenavista</item>
+        <item>Bunga</item>
+        <item>Cantutang</item>
+        <item>Dinahugan</item>
+        <item>Laca</item>
+        <item>Lungsodaan</item>
+        <item>Poblacion</item>
+        <item>San Juan</item>
+        <item>Santa Sofia</item>
+        <item>Santo Rosario</item>
+        <item>Tangkaan</item>
+    </string-array>
+    <string-array name="barangays_pintuyan">
+        <item>@string/barangay_placeholder</item>
+        <item>Badiang</item>
+        <item>Balongbalong</item>
+        <item>Buenavista</item>
+        <item>Bulawan</item>
+        <item>Canlawis</item>
+        <item>Catbawan</item>
+        <item>Caubang</item>
+        <item>Cogon</item>
+        <item>Dan-an</item>
+        <item>Lobo</item>
+        <item>Mainit</item>
+        <item>Manglit</item>
+        <item>Nueva Estrella Norte</item>
+        <item>Nueva Estrella Sur</item>
+        <item>Poblacion Ibabao</item>
+        <item>Poblacion Ubos</item>
+        <item>Pociano D. Equipilag</item>
+        <item>Ponod</item>
+        <item>San Roque</item>
+        <item>Santa Cruz</item>
+        <item>Son-ok I</item>
+        <item>Son-ok II</item>
+        <item>Tautag</item>
+    </string-array>
+    <string-array name="barangays_saint_bernard">
+        <item>@string/barangay_placeholder</item>
+        <item>Atuyan</item>
+        <item>Ayahag</item>
+        <item>Bantawon</item>
+        <item>Bolodbolod</item>
+        <item>Cabagawan</item>
+        <item>Carnaga</item>
+        <item>Catmon</item>
+        <item>Guinsaugon</item>
+        <item>Himatagon</item>
+        <item>Himbangan</item>
+        <item>Himos-onan</item>
+        <item>Hinabian</item>
+        <item>Hindag-an</item>
+        <item>Kauswagan</item>
+        <item>Libas</item>
+        <item>Lipanto</item>
+        <item>Magatas</item>
+        <item>Magbagacay</item>
+        <item>Mahayag</item>
+        <item>Mahayahay</item>
+        <item>Malibago</item>
+        <item>Malinao</item>
+        <item>Nueva Esperanza</item>
+        <item>Panian</item>
+        <item>San Isidro</item>
+        <item>Santa Cruz</item>
+        <item>Sug-angon</item>
+        <item>Tabontabon</item>
+        <item>Tambis I</item>
+        <item>Tambis II</item>
+    </string-array>
+    <string-array name="barangays_san_francisco">
+        <item>@string/barangay_placeholder</item>
+        <item>Anislagon</item>
+        <item>Bongawisan</item>
+        <item>Bongbong</item>
+        <item>Cahayag</item>
+        <item>Causi</item>
+        <item>Central</item>
+        <item>Dakit</item>
+        <item>Gabi</item>
+        <item>Habay</item>
+        <item>Malico</item>
+        <item>Marayag</item>
+        <item>Napantao</item>
+        <item>Pasanon</item>
+        <item>Pinamudlan</item>
+        <item>Punta</item>
+        <item>Santa Cruz</item>
+        <item>Santa Paz Norte</item>
+        <item>Santa Paz Sur</item>
+        <item>Sudmon</item>
+        <item>Tinaan</item>
+        <item>Tuno</item>
+        <item>Ubos</item>
+    </string-array>
+    <string-array name="barangays_san_juan">
+        <item>@string/barangay_placeholder</item>
+        <item>Agay-ay</item>
+        <item>Basak</item>
+        <item>Bobon A</item>
+        <item>Bobon B</item>
+        <item>Dayanog</item>
+        <item>Garrido</item>
+        <item>Minoyho</item>
+        <item>Osao</item>
+        <item>Pong-oy</item>
+        <item>San Jose</item>
+        <item>San Roque</item>
+        <item>San Vicente</item>
+        <item>Santa Cruz</item>
+        <item>Santa Filomena</item>
+        <item>Santo Niño</item>
+        <item>Somoje</item>
+        <item>Sua</item>
+        <item>Timba</item>
+    </string-array>
+    <string-array name="barangays_san_ricardo">
+        <item>@string/barangay_placeholder</item>
+        <item>Benit</item>
+        <item>Bitoon</item>
+        <item>Cabutan</item>
+        <item>Camang</item>
+        <item>Esperanza</item>
+        <item>Esperanza Dos</item>
+        <item>Inolinan</item>
+        <item>Kinachawa</item>
+        <item>Looc</item>
+        <item>Pinut-an</item>
+        <item>Poblacion</item>
+        <item>San Antonio</item>
+        <item>San Ramon</item>
+        <item>Saub</item>
+        <item>Timba</item>
+    </string-array>
+    <string-array name="barangays_silago">
+        <item>@string/barangay_placeholder</item>
+        <item>Balagawan</item>
+        <item>Catmon</item>
+        <item>Hingatungan</item>
+        <item>Imelda</item>
+        <item>Katipunan</item>
+        <item>Laguma</item>
+        <item>Mercedes</item>
+        <item>Poblacion District I</item>
+        <item>Poblacion District II</item>
+        <item>Puntana</item>
+        <item>Salvacion</item>
+        <item>Sap-ang</item>
+        <item>Sudmon</item>
+        <item>Tuba-on</item>
+        <item>Tubod</item>
+    </string-array>
+    <string-array name="barangays_sogod">
+        <item>@string/barangay_placeholder</item>
+        <item>Benit</item>
+        <item>Buac Daku</item>
+        <item>Buac Gamay</item>
+        <item>Cabadbaran</item>
+        <item>Concepcion</item>
+        <item>Consolacion</item>
+        <item>Dagsa</item>
+        <item>Hibod-hibod</item>
+        <item>Hindangan</item>
+        <item>Hipantag</item>
+        <item>Javier</item>
+        <item>Kahupian</item>
+        <item>Kanangkaan</item>
+        <item>Kauswagan</item>
+        <item>La Purisima Concepcion</item>
+        <item>Libas</item>
+        <item>Lum-an</item>
+        <item>Mabicay</item>
+        <item>Mac</item>
+        <item>Magatas</item>
+        <item>Mahayahay</item>
+        <item>Malinao</item>
+        <item>Maria Plana</item>
+        <item>Milagroso</item>
+        <item>Olisihan</item>
+        <item>Pancho Villa</item>
+        <item>Pandan</item>
+        <item>Rizal</item>
+        <item>Salvacion</item>
+        <item>San Francisco Mabuhay</item>
+        <item>San Isidro</item>
+        <item>San Jose</item>
+        <item>San Juan</item>
+        <item>San Miguel</item>
+        <item>San Pedro</item>
+        <item>San Roque</item>
+        <item>San Vicente</item>
+        <item>Santa Maria</item>
+        <item>Suba</item>
+        <item>Tampoong</item>
+        <item>Zone I</item>
+        <item>Zone II</item>
+        <item>Zone III</item>
+        <item>Zone IV</item>
+        <item>Zone V</item>
+    </string-array>
+    <string-array name="barangays_tomas_oppus">
+        <item>@string/barangay_placeholder</item>
+        <item>Anahawan</item>
+        <item>Banday</item>
+        <item>Biasong</item>
+        <item>Bogo</item>
+        <item>Cabascan</item>
+        <item>Camansi</item>
+        <item>Cambite</item>
+        <item>Canlupao</item>
+        <item>Carnaga</item>
+        <item>Cawayan</item>
+        <item>Higosoan</item>
+        <item>Hinagtikan</item>
+        <item>Hinapo</item>
+        <item>Hugpa</item>
+        <item>Iniguihan Poblacion</item>
+        <item>Looc</item>
+        <item>Luan</item>
+        <item>Maanyag</item>
+        <item>Mag-ata</item>
+        <item>Mapgap</item>
+        <item>Maslog</item>
+        <item>Ponong</item>
+        <item>Rizal</item>
+        <item>San Agustin</item>
+        <item>San Antonio</item>
+        <item>San Isidro</item>
+        <item>San Miguel</item>
+        <item>San Roque</item>
+        <item>Tinago</item>
+    </string-array>
 </resources>
